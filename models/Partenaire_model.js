@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const Personne = require('./Personne_model.js'); // Correction de l'importation du modèle `User`
+const Personne = require('./Personne'); // Correction de l'importation du modèle `User`
 
 
 
@@ -16,12 +16,8 @@ const partenaireSchema = new Schema({
   },
   image: {
     type: String,
-  },
-
-  publications: 
-    [{ type: Schema.Types.ObjectId, ref: 'pub' }]
-  ,
-}); 
+  }
+});
 
 const Partenaire = Personne.discriminator('Partenaire', partenaireSchema);
 

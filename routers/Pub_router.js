@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router()
-const {isAuth} = require('../middlewares/auth.js')
 const PubController = require('../controllers/Pub_controller');
 
 // GET PUBS
@@ -10,7 +9,7 @@ router.get('/', PubController.getPubs)
 router.get('/:id', PubController.getPub)
 
 // CREATE PUB
-router.post('/', isAuth, PubController.postPub)
+router.post('/', PubController.postPub)
 
 // DELETE PUB
 router.delete('/:id', PubController.deletePub)

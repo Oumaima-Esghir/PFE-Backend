@@ -1,6 +1,5 @@
 const { duration } = require('moment');
-const PubSchema = require('../models/Pub_model');
-const Partenaire = require('../models/Partenaire_model');
+const PubSchema = require('../models/Pub_model')
 
 
 
@@ -41,14 +40,9 @@ exports.getPub = async (req, res) => {
 
 // CREATE PUBS
 exports.postPub = async (req, res) => {
-    const partenaireId = req.partenaire._id;
     const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage} = req.body;
  
     try {
-        const partenaire = await Partenaire.findById(partenaireId);
-        if (!partenaire) {
-          return res.json({ status: 'error', message: 'partenaire not found' });
-        }
  if(state === "promo") {
     if(!pubImage || !title || !description || !adress || !rating || !nb_likes || !category || !state || !duree || !pourcentage) {
         res.json({status:'error', message: 'please provide all data'});

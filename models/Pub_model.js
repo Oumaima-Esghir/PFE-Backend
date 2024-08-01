@@ -1,12 +1,7 @@
 const moment = require('moment');
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
 const PubSchema = new mongoose.Schema({
-  partenaireId: {
-     type: Schema.Types.ObjectId, 
-     ref: 'Partenaire', required: true 
-    },
     pubImage: {
         type: String,
         require: true,
@@ -52,16 +47,16 @@ const PubSchema = new mongoose.Schema({
     createdAT: {
         type: String,
         default: moment(new Date()).format('DD/MM/YYYY hh:mm'),
-       
+        required : false
     },
     //promo
      duree: {
         type: String,
-       
+        require: true,
       },
       pourcentage: {
         type: Number,
-       
+        require: true,
       },
       isvalidated: {
         type: Boolean,

@@ -137,8 +137,8 @@ exports.signin = async (req, res) => {
   
   //add favorites
   exports.addToFavourites = async (req, res) => {
-    const pubId = req.params.pubId;
-    const userId = req.user._id;
+    const { userId, pubId } = req.body;
+  
     try {
       const user = await User.findById(userId);
       if (!user) {
@@ -161,8 +161,8 @@ exports.signin = async (req, res) => {
   //remove favorites
   exports.removeFromFavourites = async (req, res) => {
     // Extract user ID based on your chosen approach (query parameters or request body)
-    const userId = req.user._id;  // Assuming you use 'userId' for both options
-    const pubId = req.params.pubId; // Assuming you use 'pubId' for both options
+    const userId = req.query.userId || req.body.userId; // Assuming you use 'userId' for both options
+    const pubId = req.query.pubId || req.body.pubId; // Assuming you use 'pubId' for both options
   
     if (!userId || !pubId) {
       return res.json({ status: 'error', message: 'Missing user ID or pub ID' });
@@ -192,7 +192,7 @@ exports.signin = async (req, res) => {
     console.log('Request received'); // Log 1
   
     // Extract user ID from the URL path
-    const userId = req.user._id;
+    const userId = req.params.userId;
     console.log(`Extracted user ID: ${userId}`); // Log 2
   
     try {
@@ -209,24 +209,7 @@ exports.signin = async (req, res) => {
     }
   };
      
-  exports.uploadPicture =async (req, res) => {
-    const userId = req.user._id;
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.json({ status: 'error', message: 'User not found' });
-      }
-          if (req.file) {
-            const imagepath = req.file.path.replace(/\\/g, "/").replace("images", "");
-            res.json({ message: "ok!", imagepath: imagepath.replace("src/", "") });
-          } else {
-            res.json({ message: "Image not upload" });
-          }
-        } catch (error) {
-          res.json({ message: "error", error });
-        }    
-      };
-
+  
 // // GET UserS
 // exports.getUsers = async (req, res) => {
 //     try {
