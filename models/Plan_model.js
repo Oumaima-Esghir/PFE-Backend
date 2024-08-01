@@ -1,48 +1,49 @@
-const moment = require('moment');
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const moment = require('moment');
 
 const PlanSchema = new mongoose.Schema({
-  idUser: {
+userId: {
+ type: Schema.Types.ObjectId,
+  ref: 'User',
+ },
+ pubId: {
+  type: Schema.Types.ObjectId,
+  ref: 'pub',
+ },
+  title: {
     type: String,
-    require: true,
-  },
-  idPub: {
+    required: true,
+   },
+   dateFrom: {
     type: String,
-    require: true,
+    required: true,
+   },
+   dateTo: {
+    type: String,
+    required: true,
+   },
+   timeFrom: {
+    type: String,
+    required: true,
+   },
+   timeTo: {
+    type: String,
+    required: true,
+   },
+   nb_persons: {
+    type: Number,
+    required: true,
+   },
+   reminder: {
+    type: String,
+    required: true,
+   },
+  createdAT: {
+    type: String,
+    default: moment(new Date()).format('DD/MM/YYYY hh:mm'),
+    required : false
   }, 
-    title: {
-        type: String,
-        require: true,
-      },
-      dateFrom: {
-        type: String,
-        require: true,
-      },
-      dateTo: {
-        type: String,
-        require: true,
-      },
-      timeFrom: {
-        type: String,
-        require: true,
-      },
-      timeTo: {
-        type: String,
-        require: true,
-      },
-      nb_persons: {
-        type: Number,
-        require: true,
-      },
-      reminder: {
-        type: String,
-        require: true,
-      },
-    createdAT: {
-        type: String,
-        default: moment(new Date()).format('DD/MM/YYYY hh:mm'),
-        required : false
-    },  
 });
 
 module.exports = mongoose.model('plans', PlanSchema)

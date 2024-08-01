@@ -208,156 +208,31 @@ exports.signin = async (req, res) => {
       return res.json({ status: 'error', message: error.message });
     }
   };
-     
+
+  //update user
+  exports.updateUser = async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;
   
-// // GET UserS
-// exports.getUsers = async (req, res) => {
-//     try {
-
-//         const Users = await UserSchema.find({});
-//         res.json({status:'success', data: Users});
-
-//     }catch(error) {
-//         res.json({status:'error', message: error})
-//     }
-// };
-
-// // GET User BY ID
-// exports.getUser = async (req, res) => {
-//     const { id } = req.params;
-
-//     // verfiy id 
-//     if (!id || id == null ) {
-//         res.json({status:'error', message: 'no id provided'});
-//     }
-
-//     try {
-//         const User = await UserSchema.findById(id);
-
-//         if (!User) {
-//             res.json({status:'error', message: 'no User with that id  has been found'});
-//         }
-
-//         res.json({status:'success', data: User});
-        
-//     }catch(error) {
-//         res.json({status:'error', message: error})
-//     }
-// };
-
-// // CREATE User
-// exports.postUser = async (req, res) => {
-//     const { username, email, password } = req.body;
-
-//     if(!username || !email || !password) {
-//         res.json({status:'error', message: 'please provide all data'});
-//     }
-
-//     try {
-        
-//         const newUserObj = {
-//             username,
-//             email,
-//             password
-//         };
-
-//         const newUser = new UserSchema(newUserObj);
-
-//         const result = await newUser.save();
-
-//         res.json({status:'success', data: result});
-        
-//     }catch(error) {
-//         res.json({status:'error', message: error})
-//     }
-// };
-
-// // DELETE User
-// exports.deleteUser = async (req, res) => {
-//     const { id } = req.params;
-
-//     // verfiy id 
-//     if (!id) {
-//         res.json({status:'error', message: 'no id provided'});
-//     }
-
-//     const UserFound = await UserSchema.findById(id);
-//     if(!UserFound) { res.json({status:'error', message: 'no User found by that id'}) }
-
-//     try {
-        
-//         const result = await UserSchema.findByIdAndDelete(id);
-//         res.json({status:'success', message: 'User deleted with success'});
-
-//     }catch(error) {
-//         res.json({status:'error', message: error})
-//     }
-// };
-
-// UPDATE User
- exports.updateUser = async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    const newPassword = req.body.password;
-
-    if (newPassword) {
-      // Générer le sel et hacher le nouveau mot de passe
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-      // Mettre à jour le candidat avec le nouveau mot de passe haché
-      await model.findByIdAndUpdate(
-        id,
-        { password: hashedPassword },
-        { new: true } // Retourner le document mis à jour
-      );
-    } else {
-      // Si le mot de passe n'est pas modifié, mettre à jour les autres informations
-      const updateUser = await model.findByIdAndUpdate(id, req.body);
-      if (!updateUser) {
-        return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
-      }
+    // Vérifiez si l'ID est fourni
+    if (!id) {
+      return res.status(400).json({ status: 'error', message: 'No ID provided' });
     }
+  
+    try {
+      // Mettez à jour l'utilisateur et obtenez le document mis à jour
+      const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  
+      // Si aucun utilisateur n'est trouvé pour cet ID
+      if (!updatedUser) {
+        return res.status(404).json({ status: 'error', message: 'User not found by that ID' });
+      }
+  
+      // Répondez avec le document utilisateur mis à jour
+      res.status(200).json({ status: 'success', message: 'User updated successfully', data: updatedUser });
+    } catch (error) {
+      res.status(500).json({ status: 'error', message: error.message });
+    }
+  };
 
-    res.status(201).json({ message: `User mis à jour avec succès` });
-  } catch (error) {
-    res.status(500).json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
-  }
-};
-// // SEARCH
-// exports.searchUsers = async (req, res) => {
-//     const { query } = req.query;
-//     console.log(query)
-  
-//     if (!query) {
-//       return res.json({ status: "error", message: "Please provide a search query" });
-//     }
-  
-//     try {
-//       // Parse the query string into a number
-//       //const numPagesQuery = parseInt(query);
-      
-//       // Check if the parsing was successful and it's a valid number
-//       const searchQuery = {
-//         $or: [
-//           { username: { $regex: query, $options: "i" } },
-//           { password: { $regex: query, $options: "i" } },
-//           { email: { $regex: query, $options: "i" } }, 
-//           //{ numPages: isNaN(numPagesQuery) ? -1 : numPagesQuery } // Handle NaN case
-//         ],
-//       };
-  
-//       const users = await UserSchema.find(searchQuery);
-  
-//       if (users.length === 0) {
-//         return res.json({ status: "error", message: "No users found" });
-//       }
-  
-//       return res.json({ status: "success", data: users });
-  
-//     } catch (error) {
-//       console.error("Error in searchUsers:", error); // Log the error for debugging
-//       return res.json({ status: "error", message: "An error occurred during search" });
-//     }
-// };
+     

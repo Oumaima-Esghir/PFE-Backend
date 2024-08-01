@@ -1,15 +1,11 @@
 const moment = require('moment');
 const mongoose = require("mongoose");
+const User = require('./User_model'); 
+const Schema = mongoose.Schema;
 
 const commentSchema = new mongoose.Schema({
-  idUser: {
-    type: String,
-    require: true,
-  },
-  idPub: {
-    type: String,
-    require: true,
-  },
+  user: { type: Schema.Types.ObjectId, ref: 'User'},
+  PubId: { type: Schema.Types.ObjectId, ref: 'Pub',require: true},
   text: {
     type: String,
     require: true,

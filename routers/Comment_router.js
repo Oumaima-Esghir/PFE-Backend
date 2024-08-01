@@ -1,14 +1,12 @@
 const express = require('express');
-const router = express.Router()
-const CommentController = require('../controllers/Comment_controller');
+const router = express.Router();
+const CommentController = require('../controllers/Comment_controller'); // Chemin vers votre contrôleur
+const { isAuth } = require('../middlewares/auth'); // Middleware pour vérification de l'authentification
 
-// GET Comments
-router.get('/', CommentController.getComments)
+// Route pour créer un commentaire
+router.post('/', isAuth, CommentController.createComment); // Expects { pubId, text }
 
-// GET Comment BY ID
-router.get('/:id', CommentController.getComment)
-
-// CREATE Comment
-router.post('/', CommentController.postComment)
+// Route pour obtenir tous les commentaires d'une publication
+router.get('/:pubId', CommentController.getAllCommentsByPub);
 
 module.exports = router;

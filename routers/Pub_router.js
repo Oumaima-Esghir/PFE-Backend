@@ -2,23 +2,27 @@ const express = require('express');
 const router = express.Router()
 const PubController = require('../controllers/Pub_controller');
 
-// GET PUBS
-router.get('/', PubController.getPubs)
+const multer = require('multer'); // Import multer
+const path = require('path'); 
+const { isAuth } = require('../middlewares/auth');
 
-// GET PUB BY ID
-router.get('/:id', PubController.getPub)
 
-// CREATE PUB
-router.post('/', PubController.postPub)
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "./images");
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname));
+    },
+  });
+  const upload = multer({ storage: storage });
 
-// DELETE PUB
-router.delete('/:id', PubController.deletePub)
 
-// UPDATE PUB
-router.put('/:id', PubController.updatePub)
-
-// SEARCH
-router.post('/search', PubController.searchPubs)
+router.post('/', isAuth, upload.single('pubImage'), PubController.createPub);
+router.get('/', PubController.getAllPubs);
+router.get('/:pubId', PubController.getPubById);
+router.put('/:id', isAuth, upload.single('pubImage'), PubController.updatePub);
+router.delete('/:pubId', isAuth, PubController.deletePub);
 
 
 module.exports = router;

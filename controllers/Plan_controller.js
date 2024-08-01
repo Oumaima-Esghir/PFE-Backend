@@ -1,215 +1,225 @@
-const PlanSchema = require('../models/Plan_model')
+const Plan = require('../models/Plan_model')
+const User = require('../models/User_model')
 const moment = require('moment');
 
 // GET PLANS
 exports.getPlans = async (req, res) => {
-    try {
+ try {
 
-        const plans = await PlanSchema.find({});
-        res.json({status:'success', data: plans});
+  const plans = await Plan.find({});
+  res.json({status:'success', data: plans});
 
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
+ }catch(error) {
+  res.json({status:'error', message: error})
+ }
 };
 
 // GET PLAN BY ID
 exports.getPlan = async (req, res) => {
-    const { id } = req.params;
+ const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
 
-    // verfiy id 
-    if (!id || id == null ) {
-        res.json({status:'error', message: 'no id provided'});
-    }
-
-    try {
-        const plan = await PlanSchema.findById(id);
-
-        if (!plan) {
-            res.json({status:'error', message: 'no plan with that id  has been found'});
-        }
-
-        res.json({status:'success', data: plan});
-        
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
+ try {
+  // Filter the planifications by the userId
+  const plans = await Plan.find({ userId: userId });
+  if (plans.length === 0) {
+   return res.status(404).json({ status: 'error', message: 'No planifications found for this user' });
+  }
+  res.json({ status: 'success', data: plans });
+ } catch (error) {
+  res.status(500).json({ status: 'error', message: error.message });
+ }
 };
 
 // CREATE PLAN
 exports.postPlan = async (req, res) => {
-    const { idUser, idPub, title, dateFrom, dateTo, timeFrom, timeTo, nb_persons, reminder } = req.body;
-  
-    try {
-      
-      const DateFrom = moment(`${dateFrom}`, 'YYYY-MM-DD').toDate();
-      const formattedDateFrom = DateFrom.toISOString().slice(0, 10);
-      
-      const DateTo = moment(`${dateTo}`, 'YYYY-MM-DD').toDate();
-      const formattedDateTo = DateTo.toISOString().slice(0, 10);
+ const { title, dateFrom, dateTo, timeFrom, timeTo, nb_persons, reminder } = req.body;
+ const userId = req.user._id;
+ const pubId = req.params.pubId;
 
-      const TimeFromMoment = moment.utc(`${timeFrom}`, 'HH:mm');
-      const formattedTimeFrom = TimeFromMoment.format('HH:mm');  // Store the formatted string
-      
-      const TimeToMoment = moment.utc(`${timeTo}`, 'HH:mm');
-      const formattedTimeTo = TimeToMoment.format('HH:mm');
-      
-  
-      // Validate required fields
-      if (!idUser || !idPub || !title || !dateFrom || !dateTo || !timeFrom || !timeTo || !nb_persons || !reminder) {
-        return res.status(400).json({ status: 'error', message: 'Please provide all required data' });
-      }
-  
-      // Create new plan object
-      const newPlan = new PlanSchema({
-        idUser,
-        idPub,
-        title,
-        dateFrom: formattedDateFrom,
-        dateTo: formattedDateTo,
-        timeFrom: formattedTimeFrom,
-        timeTo: formattedTimeTo,
-        nb_persons,
-        reminder
-      });
-  
-      // Save the plan to the database
-      const result = await newPlan.save();
-  
-      return res.status(201).json({ status: 'success', data: result });
-    } catch (error) {
-      return res.status(500).json({ status: 'error', message: error.message });
-    }
-  };
+ try {
+ const user = await User.findById(userId);
+ if (!user) {
+  return res.json({ status: 'error', message: 'User not found' });
+ }
+ 
+  const DateFrom = moment(`${dateFrom}`, 'YYYY-MM-DD').toDate();
+  const formattedDateFrom = DateFrom.toISOString().slice(0, 10);
+ 
+  const DateTo = moment(`${dateTo}`, 'YYYY-MM-DD').toDate();
+  const formattedDateTo = DateTo.toISOString().slice(0, 10);
+
+  const TimeFromMoment = moment.utc(`${timeFrom}`, 'HH:mm');
+  const formattedTimeFrom = TimeFromMoment.format('HH:mm'); // Store the formatted string
+ 
+  const TimeToMoment = moment.utc(`${timeTo}`, 'HH:mm');
+  const formattedTimeTo = TimeToMoment.format('HH:mm');
+ 
+
+  // Validate required fields
+  if ( !title || !dateFrom || !dateTo || !timeFrom || !timeTo || !nb_persons || !reminder) {
+  return res.status(400).json({ status: 'error', message: 'Please provide all required data' });
+  }
+
+  const newPlan = new Plan({
+  userId,
+  pubId,
+  title,
+  dateFrom: formattedDateFrom,
+  dateTo: formattedDateTo,
+  timeFrom: formattedTimeFrom,
+  timeTo: formattedTimeTo,
+  nb_persons,
+  reminder
+  });
+
+  // Save the plan to the database
+  const result = await newPlan.save();
+  user.planifications.push(newPlan); // Assuming newplan should be result
+  await user.save();
+
+  res.json({ status: 'success', data: result }); // Single response
+ } catch (error) {
+  if (!res.headersSent) {
+  return res.status(500).json({ status: 'error', message: error.message });
+  } else {
+  console.error('Error sending response:', error.message);
+  }
+ }
+ };
 
 // DELETE PLAN
 exports.deletePlan = async (req, res) => {
-    const { id } = req.params;
+ const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
+ const planId = req.params.id;
 
-    // verfiy id 
-    if (!id) {
-        res.json({status:'error', message: 'no id provided'});
-    }
+ try {
+ // First, find the plan to check ownership
+ const plan = await Plan.findById(planId);
 
-    const planFound = await PlanSchema.findById(id);
-    if(!planFound) { res.json({status:'error', message: 'no plan found by that id'}) }
+ // Check if the plan exists
+ if (!plan) {
+  return res.status(404).json({ status: 'error', message: 'planning not found' });
+ }
 
-    try {
-        
-        const result = await PlanSchema.findByIdAndDelete(id);
-        res.json({status:'success', message: 'plan deleted with success'});
+ // Check if the logged-in partenaire is the owner of the publication
+ if (plan.userId.toString() !== userId.toString()) {
+  return res.status(403).json({ status: 'error', message: 'You do not have permission to delete this planning' });
+ }
 
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
+ // If the checks pass, delete the publication
+ await Plan.findByIdAndDelete(planId);
+
+res.json({ status: 'success', message: 'Planning deleted successfully' });
+} catch (error) {
+res.status(500).json({ status: 'error', message: error.message });
+}
 };
 
 // UPDATE PLAN
 
-    exports.updatePlan = async (req, res) => {
-        const { id } = req.params;
-        const  { idUser, idPub, title, dateFrom, dateTo, timeFrom, timeTo, nb_persons, reminder }  = req.body;
+ exports.updatePlan = async (req, res) => {
+ 
+  const { title, dateFrom, dateTo, timeFrom, timeTo, nb_persons, reminder } = req.body;
+  const planId = req.params.id;
+  const userId = req.user._id;
 
-        const DateFrom = moment(`${dateFrom}`, 'YYYY-MM-DD').toDate();
-      const formattedDateFrom = DateFrom.toISOString().slice(0, 10);
-      
-      const DateTo = moment(`${dateTo}`, 'YYYY-MM-DD').toDate();
-      const formattedDateTo = DateTo.toISOString().slice(0, 10);
+  try {
+   // Find the publication by ID and ensure the requesting partenaire is the owner
+   const plan = await Pub.findById(planId);
+   if (!plan) {
+    return res.status(404).json({ status: 'error', message: 'Planning not found' });
+   }
 
-      const TimeFromMoment = moment.utc(`${timeFrom}`, 'HH:mm');
-      const formattedTimeFrom = TimeFromMoment.format('HH:mm');  // Store the formatted string
-      
-      const TimeToMoment = moment.utc(`${timeTo}`, 'HH:mm');
-      const formattedTimeTo = TimeToMoment.format('HH:mm');
-    
-        if (!idUser || !idPub || !title || !dateFrom || !dateTo || !timeFrom || !timeTo || !nb_persons || !reminder) {
-          return res.status(400).json({ status: 'error', message: 'Please provide all required data' });
-        }
-    
-        try {
-    
-            const updateplanObj = {
-              idUser,
-              idPub,
-              title,
-              dateFrom: formattedDateFrom,
-              dateTo: formattedDateTo,
-              timeFrom: formattedTimeFrom,
-              timeTo: formattedTimeTo,
-              nb_persons,
-              reminder
-            };
-    
-            const result = await PlanSchema.findByIdAndUpdate(id, updateplanObj, {new: true});
-    
-            if(!result) {
-                res.json({status:'error', message: 'Plan not found'});
-            }
-    
-            res.json({status:'success', data: result});
-    
-        }catch(error) {
-            res.json({status:'error', message: error})
-        }
-    };
+   if (plan.userId.toString() !== userId.toString()) {
+    return res.status(403).json({ status: 'error', message: 'Unauthorized: You can only update your own publications' });
+   }
+
+  const DateFrom = moment(`${dateFrom}`, 'YYYY-MM-DD').toDate();
+  const formattedDateFrom = DateFrom.toISOString().slice(0, 10);
+ 
+  const DateTo = moment(`${dateTo}`, 'YYYY-MM-DD').toDate();
+  const formattedDateTo = DateTo.toISOString().slice(0, 10);
+
+  const TimeFromMoment = moment.utc(`${timeFrom}`, 'HH:mm');
+  const formattedTimeFrom = TimeFromMoment.format('HH:mm'); // Store the formatted string
+ 
+  const TimeToMoment = moment.utc(`${timeTo}`, 'HH:mm');
+  const formattedTimeTo = TimeToMoment.format('HH:mm');
+
+ 
+  // Update fields if provided
+  plan.title = title || plan.title;
+  plan.dateFrom = dateFrom || pub.dateFrom;
+  plan.dateTo = dateTo || plan.dateTo;
+  plan.timeFrom = timeFrom || plan.timeFrom;
+  plan.timeTo = timeTo || plan.timeTo;
+  plan.nb_persons = nb_persons || plan.nb_persons;
+  plan.reminder = reminder || plan.reminder;
+ 
+  const updatedPlan = await plan.save();
+  res.json({ status: 'success', data: updatedPlan });
+ } catch (error) {
+  res.status(500).json({ status: 'error', message: 'Error updating publication: ' + error.message });
+ }
+};
 
 //SHARE PLAN
 exports.sharePlan = async (req, res) => {
-  const { id } = req.params;
+ const { id } = req.params;
 
-  // Verify id
-  if (!id || id === null) {
-    return res.json({ status: 'error', message: 'No id provided' });
-  }
+ // Verify id
+ if (!id || id === null) {
+ return res.json({ status: 'error', message: 'No id provided' });
+ }
 
-  try {
-    const plan = await PlanSchema.findById(id);
+ try {
+ const plan = await Plan.findById(id);
 
-    if (!plan) {
-      return res.json({ status: 'error', message: 'No plan with that id found' });
-    }
+ if (!plan) {
+  return res.json({ status: 'error', message: 'No plan with that id found' });
+ }
 
-    // **Generate a unique link for the plan**
-    const uniqueLink = `http://localhost:3000/plans/${id}`; // Replace with your domain
+ // **Generate a unique link for the plan**
+ const uniqueLink = `http://localhost:3000/plans/${id}`; // Replace with your domain
 
-    res.json({ status: 'success', message: 'Plan shared successfully!', link: uniqueLink });
-  } catch (error) {
-    return res.json({ status: 'error', message: error.message });
-  }
+ res.json({ status: 'success', message: 'Plan shared successfully!', link: uniqueLink });
+ } catch (error) {
+ return res.json({ status: 'error', message: error.message });
+ }
 };
 
-// SEARCH
-exports.searchPlans = async (req, res) => {
-    const { query } = req.query;
-    console.log(query)
-  
-    if (!query) {
-      return res.json({ status: "error", message: "Please provide a search query" });
-    }
-  
-    try {
-      // Parse the query string into a number
-      const numPagesQuery = parseInt(query);
-      
-      // Check if the parsing was successful and it's a valid number
-      const searchQuery = {
-        $or: [
-          { author: { $regex: query, $options: "i" } },
-          { titre: { $regex: query, $options: "i" } },
-          { numPages: isNaN(numPagesQuery) ? -1 : numPagesQuery } // Handle NaN case
-        ],
-      };
-  
-      const pubs = await PubSchema.find(searchQuery);
-  
-      if (pubs.length === 0) {
-        return res.json({ status: "error", message: "No pubs found" });
-      }
-  
-      return res.json({ status: "success", data: pubs });
-  
-    } catch (error) {
-      console.error("Error in searchPlans:", error); // Log the error for debugging
-      return res.json({ status: "error", message: "An error occurred during search" });
-    }
-};
+// // SEARCH
+// exports.searchPlans = async (req, res) => {
+//  const { query } = req.query;
+//  console.log(query)
+
+//  if (!query) {
+//   return res.json({ status: "error", message: "Please provide a search query" });
+//  }
+
+//  try {
+//   // Parse the query string into a number
+//   const numPagesQuery = parseInt(query);
+ 
+//   // Check if the parsing was successful and it's a valid number
+//   const searchQuery = {
+//   $or: [
+//    { author: { $regex: query, $options: "i" } },
+//    { titre: { $regex: query, $options: "i" } },
+//    { numPages: isNaN(numPagesQuery) ? -1 : numPagesQuery } // Handle NaN case
+//   ],
+//   };
+
+//   const pubs = await PubSchema.find(searchQuery);
+
+//   if (pubs.length === 0) {
+//   return res.json({ status: "error", message: "No pubs found" });
+//   }
+
+//   return res.json({ status: "success", data: pubs });
+
+//  } catch (error) {
+//   console.error("Error in searchPlans:", error); // Log the error for debugging
+//   return res.json({ status: "error", message: "An error occurred during search" });
+//  }
+//}; 

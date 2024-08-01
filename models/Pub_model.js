@@ -1,34 +1,29 @@
 const moment = require('moment');
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
 
 const PubSchema = new mongoose.Schema({
     pubImage: {
         type: String,
-        require: true,
+        
       },
       title: {
         type: String,
-        require: true,
+        
       },
       description: {
         type: String,
-        require: true,
+        
       },
       adress: {
         type: String,
-        require: true,
+        
       },
-      rating: {
-        type: Number,
-        require: true,
-      },
-      nb_likes: {
-        type: Number,
-        require: true,
-      },
+      
       category: {
         type: String,
-        require: true,
+        
         enum: [
           "hotel",
           "restaurant",
@@ -41,7 +36,7 @@ const PubSchema = new mongoose.Schema({
       },
       state: {
         type: String,
-        enum: ["offre", "promo", "plan"],
+        enum: ["offre", "promo"],
         default: "offre",
       },
     createdAT: {
@@ -52,19 +47,19 @@ const PubSchema = new mongoose.Schema({
     //promo
      duree: {
         type: String,
-        require: true,
+        
       },
       pourcentage: {
         type: Number,
-        require: true,
+        
       },
       isvalidated: {
         type: Boolean,
-        default: false,
-      }, 
-
+        default: null,
+      },
+      partenaire: { type: Schema.Types.ObjectId, ref: 'Partenaire'},
+      comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], 
 });
 
-module.exports = mongoose.model('pubs', PubSchema)
+module.exports = mongoose.model('pub', PubSchema)
 
-//userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },

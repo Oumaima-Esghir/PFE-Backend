@@ -1,54 +1,20 @@
-const { duration } = require('moment');
-const PubSchema = require('../models/Pub_model')
+const Pub = require('../models/Pub_model');
+const Partenaire = require('../models/Partenaire_model');
+const Personne = require('../models/Personne_model');
 
 
-
-// GET PUBS
-exports.getPubs = async (req, res) => {
+exports.createPub = async (req, res) => {
     try {
-
-        const pubs = await PubSchema.find({});
-        res.json({status:'success', data: pubs});
-
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
-};
-
-// GET PUBS BY ID
-exports.getPub = async (req, res) => {
-    const { id } = req.params;
-
-    // verfiy id 
-    if (!id || id == null ) {
-        res.json({status:'error', message: 'no id provided'});
-    }
-
-    try {
-        const pub = await PubSchema.findById(id);
-
-        if (!pub) {
-            res.json({status:'error', message: 'no pub with that id  has been found'});
-        }
-
-        res.json({status:'success', data: pub});
-        
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
-};
-
-// CREATE PUBS
-exports.postPub = async (req, res) => {
-    const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage} = req.body;
- 
-    try {
- if(state === "promo") {
-    if(!pubImage || !title || !description || !adress || !rating || !nb_likes || !category || !state || !duree || !pourcentage) {
-        res.json({status:'error', message: 'please provide all data'});
-    }
-    const newpubObj = {
-        pubImage,
+      const partenaireId = req.user._id;
+      const { title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
+      const partenaire = await Partenaire.findById(partenaireId);
+  
+      if (!partenaire) {
+        return res.status(404).json({ message: "Partenaire not found" });
+      }
+  
+      let pubData = {
+        pubImage: req.file ? req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "") : "",
         title,
         description,
         adress,
@@ -56,166 +22,143 @@ exports.postPub = async (req, res) => {
         nb_likes,
         category,
         state,
-        duree,
-        pourcentage
-              };
-              const newpub = new PubSchema(newpubObj);
-              const result = await newpub.save();
-
-              res.json({status:'success', data: result});
- }
- else {
-    if(!pubImage || !title || !description || !adress || !rating || !nb_likes || !category || !state ) {
-        res.json({status:'error', message: 'please provide all data'});
-    }
-        const newpubObj = {
-  pubImage,
-  title,
-  description,
-  adress,
-  rating,
-  nb_likes,
-  category,
-  state
-  } 
-  const newpub = new PubSchema(newpubObj);
-  const result = await newpub.save();
-
-  res.json({status:'success', data: result});
-};        
-    }
-    catch(error) {
-        res.json({status:'error', message: error})
-    }
-
-};
-
-// DELETE PUBS
-exports.deletePub = async (req, res) => {
-    const { id } = req.params;
-
-    // verfiy id 
-    if (!id) {
-        res.json({status:'error', message: 'no id provided'});
-    }
-
-    const pubFound = await PubSchema.findById(id);
-    if(!pubFound) { res.json({status:'error', message: 'no pub found by that id'}) }
-
-    try {
-        
-        const result = await PubSchema.findByIdAndDelete(id);
-        res.json({status:'success', message: 'pub deleted with success'});
-
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
-};
-//create rate
-//getrates
-
-// UPDATE PUBS
-
-exports.updatePub = async (req, res) => {
-    const { id } = req.params;
-    const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
-
-    try {
-        if (state === "promo") {
-            if (!pubImage || !title || !description || !adress || !rating || !nb_likes || !category || !state || !duree || !pourcentage) {
-                return res.json({ status: 'error', message: 'Please provide all data' });
-            }
-
-            const updatepubObj = {
-                pubImage,
-                title,
-                description,
-                adress,
-                rating,
-                nb_likes,
-                category,
-                state,
-                duree,
-                pourcentage
-            };
-
-            const result = await PubSchema.findByIdAndUpdate(id, updatepubObj, { new: true });
-
-            if (!result) {
-                return res.json({ status: 'error', message: 'Pub not found' });
-            }
-
-            return res.json({ status: 'success', data: result });
-        } else {
-            if (!pubImage || !title || !description || !adress || !rating || !nb_likes || !category || !state) {
-                return res.json({ status: 'error', message: 'Please provide all data' });
-            }
-
-            const updatepubObj = {
-                pubImage,
-                title,
-                description,
-                adress,
-                rating,
-                nb_likes,
-                category,
-                state
-            };
-
-            const result = await PubSchema.findByIdAndUpdate(id, updatepubObj, { new: true });
-
-            if (!result) {
-                return res.json({ status: 'error', message: 'Pub not found' });
-            }
-
-            return res.json({ status: 'success', data: result });
-        }
-    } 
-    catch (error) {
-        return res.json({ status: 'error', message: error.message });
-    }
-};
-
-
-// SEARCH
-exports.searchPubs = async (req, res) => {
-    const { query } = req.query;
-    console.log(query)
-  
-    if (!query) {
-      return res.json({ status: "error", message: "Please provide a search query" });
-    }
-  
-    try {
-      // Parse the query string into a number
-      const ratingQuery = parseInt(query);
-      const nb_likesQuery = parseInt(query);
-      
-      // Check if the parsing was successful and it's a valid number
-      const searchQuery = {
-        $or: [
-          { pubImage: { $regex: query, $options: "i" } },
-          { title: { $regex: query, $options: "i" } },
-          { description: { $regex: query, $options: "i" } },
-          { adress: { $regex: query, $options: "i" } },
-          // Handle NaN case
-          { rating: isNaN(ratingQuery) ? -1 : ratingQuery },
-          { nb_likes: isNaN(nb_likesQuery) ? -1 : nb_likesQuery },
-          { category: { $regex: query, $options: "i" } },
-          { state: { $regex: query, $options: "i" } },    
-        ],
+        partenaire:partenaireId,
       };
   
-      const pubs = await PubSchema.find(searchQuery);
-  
-      if (pubs.length === 0) {
-        return res.json({ status: "error", message: "No pubs found" });
+      if (state === 'promo') {
+        pubData.duree = duree;
+        pubData.pourcentage = pourcentage;
       }
   
-      return res.json({ status: "success", data: pubs });
+      const pub = new Pub(pubData);
   
+      await pub.save();
+  
+      partenaire.publications.push(pub._id);
+      await partenaire.save();
+  
+      res.status(201).json({ message: "Publication created successfully", pub });
     } catch (error) {
-      console.error("Error in searchPubs:", error); // Log the error for debugging
-      return res.json({ status: "error", message: "An error occurred during search" });
+      res.status(500).json({ message: "Error creating publication", error: error.message });
     }
+  };
+
+exports.getAllPubs = async (req, res) => {
+  try {
+    const pubs = await Pub.find();
+    res.status(200).json(pubs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching publications", error: error.message });
+  }
+};
+
+
+exports.getPubById = async (req, res) => {
+  try {
+    const pub = await Pub.findById(req.params.pubId);
+    if (!pub) {
+      return res.status(404).json({ message: "Publication not found" });
+    }
+    res.status(200).json(pub);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching publication", error: error.message });
+  }
+};
+
+/*exports.updatePub = async (req, res) => {
+  try {
+    const partenaire = req.user._id; // Utilisez l'ID utilisateur injecté par le middleware isAuth
+    const updateData = req.body;
+
+    if (req.file) {
+      updateData.pubImage = req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "");
+    }
+
+    const pub = await Pub.findById(req.params.pubId);
+
+    if (!pub) {
+      return res.status(404).json({ message: "Publication not found" });
+    }
+
+    const partenairee = await Partenaire.findById(partenaire);
+    if (!partenairee) {
+      return res.status(404).json({ message: "Partenaire not found" });
+    }
+
+    if (!partenairee.publications.includes(pub._id)) {
+      return res.status(403).json({ message: "You do not have permission to update this publication" });
+    }
+
+    await Pub.findByIdAndUpdate(req.params.pubId, updateData, { new: true, runValidators: true });
+
+    res.status(200).json({ message: "Publication updated successfully", pub });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating publication", error: error.message });
+  }
+};
+*/
+exports.updatePub = async (req, res) => {
+     const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
+     const pubId = req.params.id;  // The ID of the publication to update
+     const partenaireId = req.user._id;
+    
+     try {
+      // Find the publication by ID and ensure the requesting partenaire is the owner
+      const pub = await Pub.findById(pubId);
+      if (!pub) {
+       return res.status(404).json({ status: 'error', message: 'Publication not found' });
+      }
+    
+      if (pub.partenaire.toString() !== partenaireId.toString()) {
+       return res.status(403).json({ status: 'error', message: 'Unauthorized: You can only update your own publications' });
+      }
+      // Update fields if provided
+      pub.pubImage = pubImage || pub.pubImage;
+      pub.title = title || pub.title;
+      pub.description = description || pub.description;
+      pub.adress = adress || pub.adress;
+      pub.rating = rating || pub.rating;
+      pub.nb_likes = nb_likes || pub.nb_likes;
+      pub.category = category || pub.category;
+      pub.state = state || pub.state;
+     
+      if (state === "promo") {
+       pub.duree = duree || pub.duree;
+       pub.pourcentage = pourcentage || pub.pourcentage;
+      }
+    
+      const updatedPub = await pub.save();
+      res.json({ status: 'success', data: updatedPub });
+     } catch (error) {
+      res.status(500).json({ status: 'error', message: 'Error updating publication: ' + error.message });
+     }
+    };
+exports.deletePub = async (req, res) => {
+  try {
+    const partenaireId = req.user._id; // Utilisez l'ID utilisateur injecté par le middleware isAuth
+
+    const pub = await Pub.findById(req.params.pubId);
+    if (!pub) {
+      return res.status(404).json({ message: "Publication not found" });
+    }
+
+    const partenaire = await Partenaire.findById({partenaire:partenaireId});
+    if (!partenaire) {
+      return res.status(404).json({ message: "Partenaire not found" });
+    }
+
+    if (!partenaire.publications.includes(pub._id)) {
+      return res.status(403).json({ message: "You do not have permission to delete this publication" });
+    }
+
+    await Pub.findByIdAndDelete(req.params.pubId);
+    await Partenaire.updateMany(
+      { publications: req.params.pubId },
+      { $pull: { publications: req.params.pubId } }
+    );
+
+    res.status(200).json({ message: "Publication deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting publication", error: error.message });
+  }
 };

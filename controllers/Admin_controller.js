@@ -1,50 +1,129 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-//const nodemailer = require("nodemailer");
-const authController = require('../controllers/User_controller.js');
 const Admin = require('../models/Admin_model');
-//const { errorMonitor } = require("nodemailer/lib/xoauth2");
+const User = require('../models/User_model');
+const Partenaire = require('../models/Partenaire_model');
+const Pub = require('../models/Pub_model')
 
- exports.authenticate = async (data, role, res) => {
-    try {
-      const admin = await model.findOne({ mail: data.mail });
-  
-      if (!admin) {
-        return res.status(404).json({ message: `${role} not found` });
-      }
-  
-      const isPasswordValid = bcrypt.compare(data.password, admin.password);
-      if (!isPasswordValid) {
-        return res
-          .status(400)
-          .json({ message: ERROR_MESSAGES.INVALID_CREDENTIALS });
-      }
-  
-      const adminWithoutPassword = admin.toJSON();
-      delete adminWithoutPassword.password;
-  
-      // Generate JWT
-      const token = jwt.sign({ _id: admin._id }, process.env.JWT_SECRET);
-  
-      res.cookie("jwt", token, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-  
-      return res.status(200).json({ message: "Successfully Logged In" });
-    } catch (error) {
-      console.error(error);
-      return res
-        .status(500)
-        .json({ message: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+exports.signin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await Admin.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  };
 
-  exports.logoutAdmin = (req, res) => {
-    authController.logout(res);
-  };
-  
-  exports.updateAdmin = async (req, res) => {
-    authController.updateUser(req, "Admin", res);
-  };
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Generate an access token
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+     // { expiresIn: '90d' }
+    );
+
+   
+    // You might want to save the refreshToken with the user's record in the database
+    // This is a simplified version without refresh token storage
+    res.status(200).json({
+      message: "Logged in successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        token: token,
+     
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users', error: error.message });
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user", error: error.message });
+  }
+};
+
+exports.getAllPubs = async (req, res) => {
+  try {
+    const pubs = await Pub.find();
+    res.status(200).json(pubs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching publications", error: error.message });
+  }
+};
+
+exports.getPubById = async (req, res) => {
+  try {
+    const pub = await Pub.findById(req.params.pubId);
+    if (!pub) {
+      return res.status(404).json({ message: "Publication not found" });
+    }
+    res.status(200).json(pub);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching publication", error: error.message });
+  }
+};
+
+exports.updatePub = async (req, res) => {
+  try {
+    const updateData = req.body;
+ 
+    if (req.file) {
+      updateData.pubImage = req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "");
+    }
+ 
+    const pub = await Pub.findByIdAndUpdate(req.params.pubId, updateData, { new: true, runValidators: true });
+ 
+    if (!pub) {
+      return res.status(404).json({ message: "Publication not found" });
+    }
+ 
+    res.status(200).json({ message: "Publication updated successfully", pub });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating publication", error: error.message });
+  }
+};
+
+exports.getAllPartners = async (req, res) => {
+  try {
+    const partners = await Partenaire.find();
+    res.status(200).json(partners);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching partners', error: error.message });
+  }
+};
+
+exports.getPartnerById = async (req, res) => {
+  try {
+    const partner = await Partenaire.findById(req.params.partnerId);
+    if (!partner) {
+      return res.status(404).json({ message: "Partner not found" });
+    }
+    res.status(200).json(partner);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching partner", error: error.message });
+  }
+};

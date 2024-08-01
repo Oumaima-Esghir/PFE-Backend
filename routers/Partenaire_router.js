@@ -1,37 +1,29 @@
 const express = require('express');
 const router = express.Router()
 const PartenaireController = require('../controllers/Partenaire_controller');
+const multer = require('multer'); // Import multer
+const path = require('path'); 
+const { isAuth } = require('../middlewares/auth');
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "./images");
+    },
+    filename: function (req, file, cb) {
+      cb(null, Date.now() + path.extname(file.originalname));
+    },
+  });
+  const upload = multer({ storage: storage });
+
 
 
 router.post('/signup', PartenaireController.signup);
 
 router.post('/signin', PartenaireController.signin);
 
-//router.post('/refresh-token', UserController.refreshToken);
+router.put('/update/:id', upload.single('image'),isAuth, PartenaireController.updatePartenaire); 
 
-//router.post('/favourites/add', UserController.addToFavourites); // POST for creating a new favourite
-
-//router.delete('/favourites/remove', UserController.removeFromFavourites); // DELETE for removing a favourite
-
-//router.get('/favourites/:userId', UserController.getFavourites); // Use userId to identify user
-
-// // GET UserS
-// router.get('/', UserController.getUsers)
-
-// // GET User BY ID
-// router.get('/:id', UserController.getUser)
-
-// // CREATE User
-// router.post('/', UserController.postUser)
-
-// // DELETE User
-// router.delete('/:id', UserController.deleteUser)
-
-// // UPDATE User
-// router.put('/:id', UserController.updateUser)
-
-// // SEARCH
-// router.post('/search', UserController.searchUsers)
-
+router.get ('/' ,isAuth, PartenaireController.getPubs);
 
 module.exports = router;

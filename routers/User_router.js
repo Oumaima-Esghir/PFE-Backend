@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router()
 const UserController = require('../controllers/User_controller');
-
+const {isAuth} = require('../middlewares/auth.js')
 
 router.post('/signup', UserController.signup);
 
 router.post('/signin', UserController.signin);
+
+router.put('/update/:id',isAuth, UserController.updateUser);
 
 router.post('/refresh-token', UserController.refreshToken);
 

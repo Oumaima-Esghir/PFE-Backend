@@ -1,27 +1,30 @@
 const express = require('express');
 const router = express.Router()
+const {isAuth} = require('../middlewares/auth.js')
+const checkRole = require('../middlewares/role.js')
 const PlanController = require('../controllers/Plan_controller');
 
 // GET PLANS
 router.get('/', PlanController.getPlans)
 
-// GET PLAN BY ID
-//router.get('/:id', PlanController.getPlan)
+// GET USER PLAN
+router.get('/get', isAuth, PlanController.getPlan)
 
 // CREATE PLAN
-router.post('/', PlanController.postPlan)
+router.post('/add/:pubId', isAuth, PlanController.postPlan)
 
 // DELETE PLAN
-router.delete('/:id', PlanController.deletePlan)
+router.delete('delete/:id', isAuth, PlanController.deletePlan)
 
 // UPDATE PLAN
-router.put('/:id', PlanController.updatePlan)
+router.put('/update/:id', isAuth, PlanController.updatePlan)
 
 // SHARE PLAN
 router.get('/:id', PlanController.sharePlan)
 
 // SEARCH
-router.post('/search', PlanController.searchPlans)
+//router.post('/search', PlanController.searchPlans)
 
 
 module.exports = router;
+
