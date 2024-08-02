@@ -2,7 +2,7 @@ const moment = require('moment');
 const Comment = require('../models/Comment_model'); // Chemin vers votre modèle Comment
 const Pub = require('../models/Pub_model'); // Chemin vers votre modèle Pub
 
-// Méthode pour créer un commentaire
+// create commment
 exports.createComment = async (req, res) => {
     const { pubId, text } = req.body; // LE pubId doit être passé dans le corps de la requête
   
@@ -32,6 +32,8 @@ exports.createComment = async (req, res) => {
       res.status(500).json({ message: "Error creating comment", error: error.message });
     }
   };
+
+  //getAllComments
   exports.getAllCommentsByPub = async (req, res) => {
     const { pubId } = req.params; // Récupérez l'ID de la publication depuis les paramètres de la requête
   
@@ -43,11 +45,11 @@ exports.createComment = async (req, res) => {
       }
   
       // Trouvez tous les commentaires associés à cette publication
-      const comments = await Comment.find( {pubId }); // Assurez-vous d'utiliser pubId ici
+      const comments = await Comment.find( { pubId }); // Assurez-vous d'utiliser pubId ici
   
       console.log(comments); // Confirmez les commentaires retournés
   
-      res.status(200).json(comments);
+      res.status(200).json({comments});
     } catch (error) {
       console.error('Error:', error); // Journaliser les erreurs
       res.status(500).json({ message: "Error fetching comments", error: error.message });

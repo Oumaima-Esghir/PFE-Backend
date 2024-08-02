@@ -22,7 +22,7 @@ router.post('/signup', PartenaireController.signup);
 
 router.post('/signin', PartenaireController.signin);
 
-router.put('/update/:id', upload.single('image'),isAuth, PartenaireController.updatePartenaire); 
+router.put('/update', upload.single('image'),isAuth, PartenaireController.updatePartenaire); 
 
 router.get ('/' ,isAuth, PartenaireController.getPubs);
 

@@ -1,64 +1,34 @@
-const rateSchema = require('../models/Rate_model');
-const User = require('../models/User_model');
+const moment = require('moment');
+const Rate = require('../models/Rate_model'); // Chemin vers votre modèle Comment
+const Pub = require('../models/Pub_model'); // Chemin vers votre modèle Pub
 
-// GET rates
-exports.getRates = async (req, res) => {
+// create rate
+exports.createRate = async (req, res) => {
+    const { pubId, rate } = req.body; // LE pubId doit être passé dans le corps de la requête
+  
     try {
-
-        const Rates = await rateSchema.find({});
-        res.json({status:'success', data: Rates});
-
-    }catch(error) {
-        res.json({status:'error', message: error})
+      // Vérifiez si la publication existe
+      const pub = await Pub.findById(pubId);
+      if (!pub) {
+        return res.status(404).json({ message: "Publication not found" });
+      }
+  
+      // Créer un nouveau rate
+      const rate = new Rate({
+        user: req.userId, // ID du user connecté (authentifié)
+        pubId: pubId, // stockez le pubId dans le rate
+        rate
+      });
+  
+      // Enregistrez le rate
+      await rate.save();
+  
+      // Ajoutez le rate à la publication (facultatif)
+      pub.rates.push(rate._id);
+      await pub.save();
+  
+      res.status(201).json({ message: "Rate created successfully", rate });
+    } catch (error) {
+      res.status(500).json({ message: "Error creating rate", error: error.message });
     }
-};
-/*
-// GET rate BY ID
-exports.getRate = async (req, res) => {
-    const { id } = req.params;
-
-    // verfiy id 
-    if (!id || id == null ) {
-        res.json({status:'error', message: 'no id provided'});
-    }
-
-    try {
-        const Rate = await rateSchema.findById(id);
-
-        if (!Rate) {
-            res.json({status:'error', message: 'no Rate with that id  has been found'});
-        }
-
-        res.json({status:'success', data: Rate});
-        
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
-};*/
-
-// CREATE rate
-exports.postRate = async (req, res) => {
-    const { idUser, idPub, rate } = req.body;
-
-    if(!idUser || !idPub || !rate) {
-        res.json({status:'error', message: 'please provide all data'});
-    }
-
-    try {
-        
-        const newRateObj = {
-            idUser : idUser,
-            idPub : idPub,
-            rate
-        };
-
-        const newRate = new rateSchema(newRateObj);
-
-        const result = await newRate.save();
-
-        res.json({status:'success', data: result});
-        
-    }catch(error) {
-        res.json({status:'error', message: error})
-    }
-};
+  };

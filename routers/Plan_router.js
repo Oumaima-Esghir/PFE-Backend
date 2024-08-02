@@ -22,8 +22,7 @@ router.put('/update/:id', isAuth, PlanController.updatePlan)
 // SHARE PLAN
 router.get('/:id', PlanController.sharePlan)
 
-// SEARCH
-//router.post('/search', PlanController.searchPlans)
+
 
 
 module.exports = router;

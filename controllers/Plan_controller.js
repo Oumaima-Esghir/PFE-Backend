@@ -125,7 +125,7 @@ res.status(500).json({ status: 'error', message: error.message });
 
   try {
    // Find the publication by ID and ensure the requesting partenaire is the owner
-   const plan = await Pub.findById(planId);
+   const plan = await Plan.findById(planId);
    if (!plan) {
     return res.status(404).json({ status: 'error', message: 'Planning not found' });
    }
@@ -149,7 +149,7 @@ res.status(500).json({ status: 'error', message: error.message });
  
   // Update fields if provided
   plan.title = title || plan.title;
-  plan.dateFrom = dateFrom || pub.dateFrom;
+  plan.dateFrom = dateFrom || plan.dateFrom;
   plan.dateTo = dateTo || plan.dateTo;
   plan.timeFrom = timeFrom || plan.timeFrom;
   plan.timeTo = timeTo || plan.timeTo;
@@ -159,7 +159,7 @@ res.status(500).json({ status: 'error', message: error.message });
   const updatedPlan = await plan.save();
   res.json({ status: 'success', data: updatedPlan });
  } catch (error) {
-  res.status(500).json({ status: 'error', message: 'Error updating publication: ' + error.message });
+  res.status(500).json({ status: 'error', message: 'Error updating planning: ' + error.message });
  }
 };
 

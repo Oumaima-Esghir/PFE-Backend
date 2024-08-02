@@ -4,7 +4,7 @@ const Partenaire = require('../models/Partenaire_model'); // Path to your User m
 const Pub = require('../models/Pub_model');
 require('dotenv').config();// Path to your User model file
 
-// Function to handle signup
+// signup partenaire
 exports.signup = async (req, res) => {
   try {
     const {email, name,  adress, image, password } = req.body;
@@ -41,6 +41,7 @@ res.status(201).json({
   }
 };
 
+ //signin partenaire
 exports.signin = async (req, res) => {
     const { email, password } = req.body;
   
@@ -80,8 +81,9 @@ exports.signin = async (req, res) => {
     }
   };
   
+  //update partenaire
   exports.updatePartenaire = async (req, res) => {
-    const { id } = req.params; // Assume we're passing the Partenaire ID via the URL params
+    //const { id } = req.params; // Assume we're passing the Partenaire ID via the URL params
     const updateData = req.body;
   
     if(req.file) {
@@ -104,7 +106,7 @@ exports.signin = async (req, res) => {
       res.status(200).json({
         message: "Partenaire updated successfully",
         partenaire: {
-          id: updatedPartenaire._id,
+         // id: updatedPartenaire._id,
           name: updatedPartenaire.name,
           adress: updatedPartenaire.adress,
           image: updatedPartenaire.image,

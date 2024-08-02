@@ -82,7 +82,47 @@ exports.signin = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+
+   //update user
+   exports.updateUser = async (req, res) => {
+    const { id } = req.params; // Assume we're passing the Partenaire ID via the URL params
+    const updateData = req.body;
   
+    if(req.file) {
+      updateData.image = req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "");
+    }
+  
+    // Hash le mot de passe, si fourni
+    if(updateData.password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(updateData.password, salt);
+    }
+  
+    try {
+      const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  
+      if(!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.status(200).json({
+        message: "User updated successfully",
+        user: {
+          
+          id: updatedUser._id,
+          username: updatedUser.username,
+          lastname: updatedUser.lastname,
+          adress: updatedUser.adress,
+          age:updatedUser.age,
+          image: updatedUser.image,
+          // Ajoutez les autres champs que vous souhaitez retourner
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating user", error: error.message });
+    }
+  };
+
   exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
   

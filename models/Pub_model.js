@@ -59,6 +59,7 @@ const PubSchema = new mongoose.Schema({
       },
       partenaire: { type: Schema.Types.ObjectId, ref: 'Partenaire'},
       comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], 
+      rates: [{ type: Schema.Types.ObjectId, ref: 'Rate' }], 
 });
 
 module.exports = mongoose.model('pub', PubSchema)

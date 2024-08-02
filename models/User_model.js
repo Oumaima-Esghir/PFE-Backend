@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Personne = require('./Personne_model'); // Correction de l'importation du modèle `User`
+const Plan =require('./Plan_model')
 
 
 
@@ -29,6 +30,7 @@ const userSchema = new Schema({
     ref: 'Pub', // Reference the Pub model
   },
   conversations: [{ type: Schema.Types.ObjectId, ref: 'Conversation' }],  
+  planifications: [{ type: Schema.Types.ObjectId, ref: 'Plan' }],  
 });
 
 const User = Personne.discriminator('User', userSchema);
