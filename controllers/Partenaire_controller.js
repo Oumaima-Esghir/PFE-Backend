@@ -33,7 +33,8 @@ res.status(201).json({
         name: user.name,
         adress: user.adress,
         image: user.image,
-        token
+        token,
+        roles:["partenaire"],
       }
     });
   } catch (error) {
@@ -72,6 +73,7 @@ exports.signin = async (req, res) => {
           id: user._id,
           email: user.email,
           token: token,
+          roles:["partenaire"],
        
         }
       });

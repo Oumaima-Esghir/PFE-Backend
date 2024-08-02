@@ -25,11 +25,10 @@ const userSchema = new Schema({
   image: {
     type: String,
   },
-  favouritePubs: {
-    type: [Schema.Types.ObjectId], // Array of ObjectIds referencing Pub documents
-    ref: 'Pub', // Reference the Pub model
-  },
+  favourites: [{ type: Schema.Types.ObjectId, ref: 'Pub' }],  
+
   conversations: [{ type: Schema.Types.ObjectId, ref: 'Conversation' }],  
+
   planifications: [{ type: Schema.Types.ObjectId, ref: 'Plan' }],  
 });
 

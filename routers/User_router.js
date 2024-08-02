@@ -24,11 +24,11 @@ router.put('/update/:id', upload.single('image'),isAuth, UserController.updateUs
 
 router.post('/refresh-token', UserController.refreshToken);
 
-router.post('/favourites/add', UserController.addToFavourites); // POST for creating a new favourite
+router.post('/favourites/add/:pubId', isAuth, UserController.addToFavourites); // POST for creating a new favourite
 
-router.delete('/favourites/remove', UserController.removeFromFavourites); // DELETE for removing a favourite
+router.delete('/favourites/remove/:pubId', isAuth, UserController.removeFromFavourites); // DELETE for removing a favourite
 
-router.get('/favourites/:userId', UserController.getFavourites); // Use userId to identify user
+router.get('/favourites', isAuth, UserController.getFavourites); 
 
 // // GET UserS
 // router.get('/', UserController.getUsers)

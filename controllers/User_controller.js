@@ -37,6 +37,7 @@ res.status(201).json({
         adress: user.adress,
         image: user.image,
         token
+        
       }
     });
   } catch (error) {
@@ -74,6 +75,8 @@ exports.signin = async (req, res) => {
           id: user._id,
           email: user.email,
           token: token,
+          roles:["user"],
+
        
         }
       });
@@ -177,7 +180,8 @@ exports.signin = async (req, res) => {
   
   //add favorites
   exports.addToFavourites = async (req, res) => {
-    const { userId, pubId } = req.body;
+    const userId = req.user._id;
+    const pubId = req.params.pubId;
   
     try {
       const user = await User.findById(userId);
@@ -185,11 +189,11 @@ exports.signin = async (req, res) => {
         return res.json({ status: 'error', message: 'User not found' });
       }
   
-      if (user.favouritePubs.includes(pubId)) {
+      if (user.favourites.includes(pubId)) {
         return res.json({ status: 'error', message: 'Pub already in favourites' });
       }
   
-      user.favouritePubs.push(pubId);
+      user.favourites.push(pubId);
       await user.save();
   
       return res.json({ status: 'success', message: 'Pub added to favourites' });
@@ -200,9 +204,8 @@ exports.signin = async (req, res) => {
   
   //remove favorites
   exports.removeFromFavourites = async (req, res) => {
-    // Extract user ID based on your chosen approach (query parameters or request body)
-    const userId = req.query.userId || req.body.userId; // Assuming you use 'userId' for both options
-    const pubId = req.query.pubId || req.body.pubId; // Assuming you use 'pubId' for both options
+    const userId = req.user._id;
+    const pubId = req.params.pubId;
   
     if (!userId || !pubId) {
       return res.json({ status: 'error', message: 'Missing user ID or pub ID' });
@@ -213,12 +216,12 @@ exports.signin = async (req, res) => {
         return res.json({ status: 'error', message: 'User not found' });
       }
   
-      const pubIndex = user.favouritePubs.indexOf(pubId);
+      const pubIndex = user.favourites.indexOf(pubId);
       if (pubIndex === -1) {
         return res.json({ status: 'error', message: 'Pub not found in favourites' });
       }
   
-      user.favouritePubs.splice(pubIndex, 1);
+      user.favourites.splice(pubIndex, 1);
       await user.save();
   
       return res.json({ status: 'success', message: 'Pub removed from favourites' });
@@ -231,24 +234,24 @@ exports.signin = async (req, res) => {
   exports.getFavourites = async (req, res) => {
     console.log('Request received'); // Log 1
   
-    // Extract user ID from the URL path
-    const userId = req.params.userId;
+    const userId = req.user._id;
     console.log(`Extracted user ID: ${userId}`); // Log 2
   
     try {
       const user = await User.findById(userId);
+  
       console.log(`User found: ${user ? 'Yes' : 'No'}`); // Log 3
+  
       if (!user) {
         return res.json({ status: 'error', message: 'User not found' });
       }
   
-      return res.json({ status: 'success', data: user.favouritePubs });
+      return res.json({ status: 'success', data: user.favourites });
     } catch (error) {
       console.error(error); // Log any errors
       return res.json({ status: 'error', message: error.message });
     }
   };
-
   //update user
   exports.updateUser = async (req, res) => {
     const { id } = req.params;
