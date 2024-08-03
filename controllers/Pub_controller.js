@@ -97,6 +97,7 @@ exports.getPubById = async (req, res) => {
   }
 };
 */
+//update pub
 exports.updatePub = async (req, res) => {
      const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
      const pubId = req.params.id;  // The ID of the publication to update
@@ -133,32 +134,70 @@ exports.updatePub = async (req, res) => {
       res.status(500).json({ status: 'error', message: 'Error updating publication: ' + error.message });
      }
     };
+
+//delete pub   
+
 exports.deletePub = async (req, res) => {
+  const partenaireId = req.user._id;
+  const pubId = req.params.pubId;
+
+  if (!partenaireId || !pubId) {
+    return res.status(400).json({ message: 'Missing partenaire ID or pub ID' });
+  }
+
   try {
-    const partenaireId = req.user._id; // Utilisez l'ID utilisateur injecté par le middleware isAuth
+    const partenaire = await Partenaire.findById(partenaireId);
+    const pub = await Pub.findById(pubId);
 
-    const pub = await Pub.findById(req.params.pubId);
-    if (!pub) {
-      return res.status(404).json({ message: "Publication not found" });
+    if (!partenaire || !pub) {
+      return res.status(404).json({ message: 'Partenaire or Pub not found' });
     }
 
-    const partenaire = await Partenaire.findById({partenaire:partenaireId});
-    if (!partenaire) {
-      return res.status(404).json({ message: "Partenaire not found" });
-    }
-
+    // Check publication ownership (optional, if needed)
     if (!partenaire.publications.includes(pub._id)) {
-      return res.status(403).json({ message: "You do not have permission to delete this publication" });
+      return res.status(403).json({ message: 'Unauthorized: You cannot delete this publication' });
     }
 
-    await Pub.findByIdAndDelete(req.params.pubId);
-    await Partenaire.updateMany(
-      { publications: req.params.pubId },
-      { $pull: { publications: req.params.pubId } }
-    );
+    // Remove from partenaire's publications
+    partenaire.publications.pull(pub._id);
+    await partenaire.save();
 
-    res.status(200).json({ message: "Publication deleted successfully" });
+    // Delete the publication document from the database
+    await Pub.findByIdAndDelete(pubId);
+
+    res.status(200).json({ message: 'Pub deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting publication", error: error.message });
+    console.error('Error deleting pub:', error);
+    res.status(500).json({ message: 'Error deleting pub' });
   }
 };
+
+/*exports.deletePub = async (req, res) => {
+  const partenaireId = req.user._id;
+    const pubId = req.params.pubId;
+  
+    if (!partenaireId || !pubId) {
+      return res.json({ status: 'error', message: 'Missing partenaire ID or pub ID' });
+    }
+    try {
+      const partenaire = await Partenaire.findById(partenaireId);
+     
+      if (!partenaire) {
+        return res.json({ status: 'error', message: 'Partenaire not found' });
+      }
+      
+  
+      const pubIndex = partenaire.publications.indexOf(pubId);
+      if (pubIndex === -1) {
+        return res.json({ status: 'error', message: 'Pub not found in publications' });
+      }
+  
+      partenaire.publications.splice(pubIndex, 1);
+      await partenaire.save();
+  
+      return res.json({ status: 'success', message: 'Pub removed from publications' });
+    } catch (error) {
+      return res.json({ status: 'error', message: error.message });
+    }
+  };*/
+

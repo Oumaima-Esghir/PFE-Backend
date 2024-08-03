@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Personne = require('./Personne_model'); // Correction de l'importation du modèle `User`
-const Plan =require('./Plan_model')
+const Plan = require('./Plan_model')
+const Pub = require('./Pub_model')
 
 
 
@@ -25,7 +26,7 @@ const userSchema = new Schema({
   image: {
     type: String,
   },
-  favourites: [{ type: Schema.Types.ObjectId, ref: 'Pub' }],  
+  favouritePubs: [{ type: Schema.Types.ObjectId, ref: 'Pub' }],  
 
   conversations: [{ type: Schema.Types.ObjectId, ref: 'Conversation' }],  
 

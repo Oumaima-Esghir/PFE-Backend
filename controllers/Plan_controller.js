@@ -89,7 +89,41 @@ exports.postPlan = async (req, res) => {
 
 // DELETE PLAN
 exports.deletePlan = async (req, res) => {
- const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
+    const userId = req.user._id;
+  const planId = req.params.planId;
+
+  if (!userId || !planId) {
+    return res.status(400).json({ message: 'Missing user ID or plan ID' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    const plan = await Plan.findById(planId);
+
+    if (!user || !plan) {
+      return res.status(404).json({ message: 'User or Plan not found' });
+    }
+
+    // Check planning ownership (optional, if needed)
+    if (!user.planifications.includes(plan._id)) {
+      return res.status(403).json({ message: 'Unauthorized: You cannot delete this planning' });
+    }
+
+    // Remove from user's planifications
+    user.planifications.pull(plan._id);
+    await user.save();
+
+    // Delete the planification document from the database
+    await Plan.findByIdAndDelete(planId);
+
+    res.status(200).json({ message: 'Planning deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting plan:', error);
+    res.status(500).json({ message: 'Error deleting plan' });
+  }
+};
+
+/* const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
  const planId = req.params.id;
 
  try {
@@ -101,7 +135,7 @@ exports.deletePlan = async (req, res) => {
   return res.status(404).json({ status: 'error', message: 'planning not found' });
  }
 
- // Check if the logged-in partenaire is the owner of the publication
+ // Check if the logged-in user is the owner of the planning
  if (plan.userId.toString() !== userId.toString()) {
   return res.status(403).json({ status: 'error', message: 'You do not have permission to delete this planning' });
  }
@@ -113,7 +147,7 @@ res.json({ status: 'success', message: 'Planning deleted successfully' });
 } catch (error) {
 res.status(500).json({ status: 'error', message: error.message });
 }
-};
+};*/
 
 // UPDATE PLAN
 

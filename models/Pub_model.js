@@ -1,9 +1,16 @@
 const moment = require('moment');
 const mongoose = require('mongoose');
+const Rate = require('./Rate_model')
+const Comment = require('./Comment_model')
+const Partenaire = require('./Partenaire_model')
 const Schema = mongoose.Schema;
 
-
 const PubSchema = new mongoose.Schema({
+
+  partenaireId: {
+    type: Schema.Types.ObjectId,
+     ref: 'Partenaire',
+    },
     pubImage: {
         type: String,
         
@@ -19,6 +26,10 @@ const PubSchema = new mongoose.Schema({
       adress: {
         type: String,
         
+      },
+      rating: {
+        type: Number,
+        default: 0, // Initial rating value
       },
       
       category: {
@@ -57,10 +68,25 @@ const PubSchema = new mongoose.Schema({
         type: Boolean,
         default: null,
       },
-      partenaire: { type: Schema.Types.ObjectId, ref: 'Partenaire'},
-      comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }], 
+      
+      comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
       rates: [{ type: Schema.Types.ObjectId, ref: 'Rate' }], 
 });
 
-module.exports = mongoose.model('pub', PubSchema)
+PubSchema.pre('save', async function (next) {
+  const pub = this; // refers to the Pub document being saved
+
+  // Calculate average rating using aggregation
+  const [averageRate] = await Rate.aggregate([
+    { $match: { pubId: pub._id } }, // Filter rates for this pub
+    { $group: { _id: null, averageRating: { $avg: '$rate' } } }, // Calculate average
+  ]);
+
+  // Update rating field with the calculated average (or default to 0)
+  pub.rating = averageRate?.averageRating || 0;
+
+  next(); // Continue with the save operation
+});
+
+module.exports = mongoose.model('pub', PubSchema);
 

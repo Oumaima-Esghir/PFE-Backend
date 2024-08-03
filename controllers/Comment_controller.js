@@ -1,57 +1,66 @@
 const moment = require('moment');
-const Comment = require('../models/Comment_model'); // Chemin vers votre modèle Comment
-const Pub = require('../models/Pub_model'); // Chemin vers votre modèle Pub
+const Comment = require('../models/Comment_model'); // Ensure correct path
+const Pub = require('../models/Pub_model');
+const User = require('../models/User_model')
 
 // create commment
 exports.createComment = async (req, res) => {
-    const { pubId, text } = req.body; // LE pubId doit être passé dans le corps de la requête
-  
-    try {
-      // Vérifiez si la publication existe
-      const pub = await Pub.findById(pubId);
-      if (!pub) {
-        return res.status(404).json({ message: "Publication not found" });
-      }
-  
-      // Créer un nouveau commentaire
-      const comment = new Comment({
-        user: req.userId, // ID du user connecté (authentifié)
-        pubId: pubId, // stockez le pubId dans le commentaire
-        text
-      });
-  
-      // Enregistrez le commentaire
-      await comment.save();
-  
-      // Ajoutez le commentaire à la publication (facultatif)
-      pub.comments.push(comment._id);
-      await pub.save();
-  
-      res.status(201).json({ message: "Comment created successfully", comment });
-    } catch (error) {
-      res.status(500).json({ message: "Error creating comment", error: error.message });
+  const userId = req.user._id;
+  const pubId = req.params.pubId;
+  const { text } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+ if (!user) {
+  return res.json({ status: 'error', message: 'User not found' });
     }
+
+    const pub = await Pub.findById(pubId);
+    if (!pub) {
+      return res.status(404).json({ message: "Publication not found" });
+    }
+
+    const newComment = new Comment({
+      userId,
+      pubId,
+      text
+    });
+
+    const result = await newComment.save();
+
+    pub.comments.push(newComment); 
+
+    await pub.save();
+    
+    res.json({ status: 'success', data: result }); // Single response
+  } catch (error) {
+   if (!res.headersSent) {
+   return res.status(500).json({ status: 'error', message: error.message });
+   } else {
+   console.error('Error sending response:', error.message);
+   }
+  }
   };
 
   //getAllComments
   exports.getAllCommentsByPub = async (req, res) => {
-    const { pubId } = req.params; // Récupérez l'ID de la publication depuis les paramètres de la requête
+    const pubId = req.params.pubId;
   
     try {
-      // Vérifiez si la publication existe
-      const pub = await Pub.findById(pubId);
+      const pub = await Pub.findById(pubId)// Populate comments
+  
       if (!pub) {
-        return res.status(404).json({ message: "Publication not found" });
+        return res.status(404).json({ status: 'error', message: 'Publication not found' });
       }
   
-      // Trouvez tous les commentaires associés à cette publication
-      const comments = await Comment.find( { pubId }); // Assurez-vous d'utiliser pubId ici
+      if (pub.comments.length === 0) {
+        return res.status(200).json({ status: 'success', message: 'No comments found for this pub' }); // Send appropriate status code (200)
+      }
   
-      console.log(comments); // Confirmez les commentaires retournés
-  
-      res.status(200).json({comments});
+      res.json({ status: 'success', data: pub.comments }); // Return comments within pub
     } catch (error) {
-      console.error('Error:', error); // Journaliser les erreurs
-      res.status(500).json({ message: "Error fetching comments", error: error.message });
+      console.error('Error fetching comments:', error.message);
+      res.status(500).json({ status: 'error', message: error.message });
     }
   };
+  

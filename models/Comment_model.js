@@ -1,19 +1,27 @@
 const moment = require('moment');
 const mongoose = require("mongoose");
 const User = require('./User_model'); 
+const Pub = require('./Pub_model')
 const Schema = mongoose.Schema;
 
 const commentSchema = new mongoose.Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User'},
-  PubId: { type: Schema.Types.ObjectId, ref: 'Pub'},
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  pubId: {
+    type: Schema.Types.ObjectId,
+    ref: 'pub',
+  },
   text: {
     type: String,
-    require: true,
+    required: false,
   },
-  createdAT: {
+  createdAt: {
     type: String,
     default: moment(new Date()).format('DD/MM/YYYY hh:mm'),
-    required : false
-}
-  ,});
-  module.exports = mongoose.model('comment', commentSchema)
+    required: false
+  }
+});
+
+module.exports = mongoose.model('comment', commentSchema);

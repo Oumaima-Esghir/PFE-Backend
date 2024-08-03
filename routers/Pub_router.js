@@ -19,10 +19,14 @@ const storage = multer.diskStorage({
 
 
 router.post('/', isAuth, upload.single('pubImage'), PubController.createPub);
+
 router.get('/', PubController.getAllPubs);
+
 router.get('/:pubId', PubController.getPubById);
+
 router.put('/:id', isAuth, upload.single('pubImage'), PubController.updatePub);
-router.delete('/:pubId', isAuth, PubController.deletePub);
+
+router.delete('/delete/:pubId', isAuth, PubController.deletePub);
 
 
 module.exports = router;

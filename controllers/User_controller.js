@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const User = require('../models/User_model'); // Path to your User model file
-require('dotenv').config();// Path to your User model file
+const User = require('../models/User_model');// Path to your User model file
+const Pub = require('../models/Pub_model'); 
+require('dotenv').config();
 
 // Function to handle signup
 exports.signup = async (req, res) => {
@@ -180,6 +181,7 @@ exports.signin = async (req, res) => {
   
   //add favorites
   exports.addToFavourites = async (req, res) => {
+    
     const userId = req.user._id;
     const pubId = req.params.pubId;
   
@@ -189,11 +191,11 @@ exports.signin = async (req, res) => {
         return res.json({ status: 'error', message: 'User not found' });
       }
   
-      if (user.favourites.includes(pubId)) {
+      if (user.favouritePubs.includes(pubId)) {
         return res.json({ status: 'error', message: 'Pub already in favourites' });
       }
   
-      user.favourites.push(pubId);
+      user.favouritePubs.push(pubId);
       await user.save();
   
       return res.json({ status: 'success', message: 'Pub added to favourites' });
@@ -204,6 +206,7 @@ exports.signin = async (req, res) => {
   
   //remove favorites
   exports.removeFromFavourites = async (req, res) => {
+
     const userId = req.user._id;
     const pubId = req.params.pubId;
   
@@ -216,12 +219,12 @@ exports.signin = async (req, res) => {
         return res.json({ status: 'error', message: 'User not found' });
       }
   
-      const pubIndex = user.favourites.indexOf(pubId);
+      const pubIndex = user.favouritePubs.indexOf(pubId);
       if (pubIndex === -1) {
         return res.json({ status: 'error', message: 'Pub not found in favourites' });
       }
   
-      user.favourites.splice(pubIndex, 1);
+      user.favouritePubs.splice(pubIndex, 1);
       await user.save();
   
       return res.json({ status: 'success', message: 'Pub removed from favourites' });
@@ -232,26 +235,23 @@ exports.signin = async (req, res) => {
   
   //get favorites
   exports.getFavourites = async (req, res) => {
-    console.log('Request received'); // Log 1
-  
-    const userId = req.user._id;
-    console.log(`Extracted user ID: ${userId}`); // Log 2
-  
     try {
-      const user = await User.findById(userId);
+      const userId = req.user._id;
   
-      console.log(`User found: ${user ? 'Yes' : 'No'}`); // Log 3
+      const user = await User.findById(userId).populate('favouritePubs');
   
       if (!user) {
-        return res.json({ status: 'error', message: 'User not found' });
+        return res.status(404).json({ status: 'error', message: 'User not found' });
       }
   
-      return res.json({ status: 'success', data: user.favourites });
+      return res.json({ status: 'success', data: user.favouritePubs });
     } catch (error) {
-      console.error(error); // Log any errors
-      return res.json({ status: 'error', message: error.message });
+      console.error(error);
+      return res.status(500).json({ status: 'error', message: 'Failed to retrieve favourites' });
     }
   };
+  
+  
   //update user
   exports.updateUser = async (req, res) => {
     const { id } = req.params;

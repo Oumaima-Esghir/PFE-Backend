@@ -11,10 +11,10 @@ router.get('/', PlanController.getPlans)
 router.get('/get', isAuth, PlanController.getPlan)
 
 // CREATE PLAN
-router.post('/add/:pubId', isAuth, PlanController.postPlan)
+router.post('/add/:planId', isAuth, PlanController.postPlan)
 
 // DELETE PLAN
-router.delete('delete/:id', isAuth, PlanController.deletePlan)
+router.delete('/delete/:planId', isAuth, PlanController.deletePlan)
 
 // UPDATE PLAN
 router.put('/update/:id', isAuth, PlanController.updatePlan)

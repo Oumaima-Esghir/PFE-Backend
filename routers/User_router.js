@@ -30,23 +30,5 @@ router.delete('/favourites/remove/:pubId', isAuth, UserController.removeFromFavo
 
 router.get('/favourites', isAuth, UserController.getFavourites); 
 
-// // GET UserS
-// router.get('/', UserController.getUsers)
-
-// // GET User BY ID
-// router.get('/:id', UserController.getUser)
-
-// // CREATE User
-// router.post('/', UserController.postUser)
-
-// // DELETE User
-// router.delete('/:id', UserController.deleteUser)
-
-// // UPDATE User
-// router.put('/:id', UserController.updateUser)
-
-// // SEARCH
-// router.post('/search', UserController.searchUsers)
-
 
 module.exports = router;
