@@ -1,4 +1,5 @@
 const Plan = require('../models/Plan_model')
+const Pub = require('../models/Pub_model')
 const User = require('../models/User_model')
 const moment = require('moment');
 
@@ -15,6 +16,30 @@ exports.getPlans = async (req, res) => {
 };
 
 // GET PLAN BY ID
+exports.getPlanById = async (req, res) => {
+  try {
+    const plan = await Plan.findById(req.params.planId);
+    if (!plan) {
+      return res.status(404).json({ message: "Plan not found" });
+    }
+    res.status(200).json(plan);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching planning", error: error.message });
+  }
+};
+/*exports.getPlan = async (req, res) => {
+  const userId = req.user._id; 
+  try {
+    const userId = req.user._id;
+    console.log(userId)
+    const plans = await Plan.find({userId: userId});
+    console.log({plans})
+    res.status(200).json({plans});
+  } catch (error) {
+    res.status(500).json({msg:'erreur',error:error.msg})
+  }
+};*/
+
 exports.getPlan = async (req, res) => {
  const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
 
@@ -37,10 +62,15 @@ exports.postPlan = async (req, res) => {
  const pubId = req.params.pubId;
 
  try {
+ // console.log('Request parameters:', req.params);
  const user = await User.findById(userId);
+
+
  if (!user) {
   return res.json({ status: 'error', message: 'User not found' });
  }
+ 
+ 
  
   const DateFrom = moment(`${dateFrom}`, 'YYYY-MM-DD').toDate();
   const formattedDateFrom = DateFrom.toISOString().slice(0, 10);
@@ -71,6 +101,7 @@ exports.postPlan = async (req, res) => {
   nb_persons,
   reminder
   });
+ // console.log('Creating plan:', newPlan);
 
   // Save the plan to the database
   const result = await newPlan.save();
@@ -154,8 +185,10 @@ res.status(500).json({ status: 'error', message: error.message });
  exports.updatePlan = async (req, res) => {
  
   const { title, dateFrom, dateTo, timeFrom, timeTo, nb_persons, reminder } = req.body;
-  const planId = req.params.id;
+
+  const planId = req.params.planId;
   const userId = req.user._id;
+  
 
   try {
    // Find the publication by ID and ensure the requesting partenaire is the owner
