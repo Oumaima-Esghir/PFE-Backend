@@ -20,7 +20,7 @@ router.post('/signup', UserController.signup);
 
 router.post('/signin', UserController.signin);
 
-router.put('/update/:id', upload.single('image'),isAuth, UserController.updateUser); 
+router.put('/update', upload.single('image'), isAuth, UserController.updateUser); 
 
 router.post('/refresh-token', UserController.refreshToken);
 

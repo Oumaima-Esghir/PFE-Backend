@@ -27,7 +27,7 @@ exports.signup = async (req, res) => {
     // Generate a token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET,);
 res.status(201).json({
-      message: 'User successfully created!',
+      message: 'Partner successfully created!',
       user: {
         id: user._id,
         name: user.name,
@@ -38,7 +38,7 @@ res.status(201).json({
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating user', error: error.message });
+    res.status(500).json({ message: 'Error creating partner', error: error.message });
   }
 };
 
@@ -49,7 +49,7 @@ exports.signin = async (req, res) => {
     try {
       const user = await Partenaire.findOne({ email });
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "Partner not found" });
       }
   
       const isMatch = await bcrypt.compare(password, user.password);
@@ -85,7 +85,7 @@ exports.signin = async (req, res) => {
   
   //update partenaire
   exports.updatePartenaire = async (req, res) => {
-    //const { id } = req.params; // Assume we're passing the Partenaire ID via the URL params
+    const partenaireId = req.user._id;
     const updateData = req.body;
   
     if(req.file) {
@@ -99,7 +99,7 @@ exports.signin = async (req, res) => {
     }
   
     try {
-      const updatedPartenaire = await Partenaire.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+      const updatedPartenaire = await Partenaire.findByIdAndUpdate(partenaireId, updateData, { new: true, runValidators: true });
   
       if(!updatedPartenaire) {
         return res.status(404).json({ message: "Partenaire not found" });
@@ -108,7 +108,7 @@ exports.signin = async (req, res) => {
       res.status(200).json({
         message: "Partenaire updated successfully",
         partenaire: {
-         // id: updatedPartenaire._id,
+          partenaireId: updatedPartenaire._id,
           name: updatedPartenaire.name,
           adress: updatedPartenaire.adress,
           image: updatedPartenaire.image,
@@ -120,12 +120,13 @@ exports.signin = async (req, res) => {
     }
   };
 
+  //get partenaire pub
   exports.getPubs = async (req , res) => {
     try {
       const partenaireId = req.user._id;
-      console.log(partenaireId)
+      //console.log(partenaireId)
       const pubs = await Pub.find({partenaireId: partenaireId});
-      console.log({pubs})
+      //console.log({pubs})
       res.status(200).json({pubs});
     } catch (error) {
       res.status(500).json({msg:'erreur',error:error.msg})

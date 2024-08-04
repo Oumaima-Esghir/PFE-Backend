@@ -4,7 +4,7 @@ const User = require('../models/User_model');// Path to your User model file
 const Pub = require('../models/Pub_model'); 
 require('dotenv').config();
 
-// Function to handle signup
+//  signup user
 exports.signup = async (req, res) => {
   try {
     const {email, username, lastname, age, adress, image, password } = req.body;
@@ -37,6 +37,7 @@ res.status(201).json({
         age: user.age,
         adress: user.adress,
         image: user.image,
+        roles:["user"],
         token
         
       }
@@ -46,6 +47,7 @@ res.status(201).json({
   }
 };
 
+//SignIn user 
 exports.signin = async (req, res) => {
     const { email, password } = req.body;
   
@@ -89,7 +91,7 @@ exports.signin = async (req, res) => {
 
    //update user
    exports.updateUser = async (req, res) => {
-    const { id } = req.params; // Assume we're passing the Partenaire ID via the URL params
+    const userId = req.user._id;
     const updateData = req.body;
   
     if(req.file) {
@@ -103,7 +105,7 @@ exports.signin = async (req, res) => {
     }
   
     try {
-      const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+      const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true });
   
       if(!updatedUser) {
         return res.status(404).json({ message: "User not found" });
@@ -113,7 +115,7 @@ exports.signin = async (req, res) => {
         message: "User updated successfully",
         user: {
           
-          id: updatedUser._id,
+          userId: updatedUser._id,
           username: updatedUser.username,
           lastname: updatedUser.lastname,
           adress: updatedUser.adress,
@@ -127,6 +129,7 @@ exports.signin = async (req, res) => {
     }
   };
 
+  //refresh token
   exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
   
@@ -169,6 +172,7 @@ exports.signin = async (req, res) => {
     }
   };
 
+  //logout
   exports.logout = (res) => {
     try {
       res.clearCookie("jwt", { path: "/" });
@@ -238,7 +242,7 @@ exports.signin = async (req, res) => {
     try {
       const userId = req.user._id;
   
-      const user = await User.findById(userId).populate('favouritePubs');
+      const user = await User.findById(userId);
   
       if (!user) {
         return res.status(404).json({ status: 'error', message: 'User not found' });
@@ -253,7 +257,7 @@ exports.signin = async (req, res) => {
   
   
   //update user
-  exports.updateUser = async (req, res) => {
+  /*exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
   
@@ -276,6 +280,6 @@ exports.signin = async (req, res) => {
     } catch (error) {
       res.status(500).json({ status: 'error', message: error.message });
     }
-  };
+  };*/
 
      
