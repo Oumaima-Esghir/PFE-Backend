@@ -22,7 +22,7 @@ exports.createPub = async (req, res) => {
         nb_likes,
         category,
         state,
-        partenaire:partenaireId,
+        partenaireId,
       };
   
       if (state === 'promo') {
@@ -100,19 +100,27 @@ exports.getPubById = async (req, res) => {
 //update pub
 exports.updatePub = async (req, res) => {
      const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
-     const pubId = req.params.id;  // The ID of the publication to update
+     const pubId = req.params.pubId; // The ID of the publication to update
      const partenaireId = req.user._id;
-    
+
      try {
-      // Find the publication by ID and ensure the requesting partenaire is the owner
       const pub = await Pub.findById(pubId);
+  
       if (!pub) {
-       return res.status(404).json({ status: 'error', message: 'Publication not found' });
+        return res.status(404).json({ status: 'error', message: 'Publication not found' });
       }
-    
-      if (pub.partenaire.toString() !== partenaireId.toString()) {
-       return res.status(403).json({ status: 'error', message: 'Unauthorized: You can only update your own publications' });
+  
+      console.log('partenaireId:', partenaireId);
+      console.log('pub.partenaireId:', pub.partenaireId);
+  
+      if (!pub.partenaireId) {
+        return res.status(400).json({ status: 'error', message: 'Publication missing partenaireId' });
       }
+  
+      if (pub.partenaireId.toString() !== partenaireId.toString()) {
+        return res.status(403).json({ status: 'error', message: 'Unauthorized: You can only update your own publications' });
+      }
+
       // Update fields if provided
       pub.pubImage = pubImage || pub.pubImage;
       pub.title = title || pub.title;
@@ -122,18 +130,21 @@ exports.updatePub = async (req, res) => {
       pub.nb_likes = nb_likes || pub.nb_likes;
       pub.category = category || pub.category;
       pub.state = state || pub.state;
-     
-      if (state === "promo") {
-       pub.duree = duree || pub.duree;
+      pub.duree = duree || pub.duree;
        pub.pourcentage = pourcentage || pub.pourcentage;
-      }
+     
+      // if (state === "promo") {
+      //  pub.duree = duree || pub.duree;
+      //  pub.pourcentage = pourcentage || pub.pourcentage;
+      // }
     
       const updatedPub = await pub.save();
       res.json({ status: 'success', data: updatedPub });
-     } catch (error) {
+    } catch (error) {
+      console.error('Error updating publication:', error);
       res.status(500).json({ status: 'error', message: 'Error updating publication: ' + error.message });
-     }
-    };
+    }
+  };
 
 //delete pub   
 

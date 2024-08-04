@@ -124,7 +124,7 @@ exports.signin = async (req, res) => {
     try {
       const partenaireId = req.user._id;
       console.log(partenaireId)
-      const pubs = await Pub.find({partenaire: partenaireId});
+      const pubs = await Pub.find({partenaireId: partenaireId});
       console.log({pubs})
       res.status(200).json({pubs});
     } catch (error) {

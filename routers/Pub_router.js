@@ -24,7 +24,7 @@ router.get('/', PubController.getAllPubs);
 
 router.get('/:pubId', PubController.getPubById);
 
-router.put('/:id', isAuth, upload.single('pubImage'), PubController.updatePub);
+router.put('/:pubId', isAuth, upload.single('pubImage'), PubController.updatePub);
 
 router.delete('/delete/:pubId', isAuth, PubController.deletePub);
 

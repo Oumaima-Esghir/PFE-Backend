@@ -198,7 +198,7 @@ res.status(500).json({ status: 'error', message: error.message });
    }
 
    if (plan.userId.toString() !== userId.toString()) {
-    return res.status(403).json({ status: 'error', message: 'Unauthorized: You can only update your own publications' });
+    return res.status(403).json({ status: 'error', message: 'Unauthorized: You can only update your own planifications' });
    }
 
   const DateFrom = moment(`${dateFrom}`, 'YYYY-MM-DD').toDate();
