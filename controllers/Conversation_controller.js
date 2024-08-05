@@ -26,6 +26,7 @@ const generateInitialHistory = () => {
   ];
 };
 
+//handle message
 exports.handleMessage = async (req, res) => {
   try {
     const { message } = req.body;
@@ -50,8 +51,6 @@ exports.handleMessage = async (req, res) => {
       });
     }
 
-   
-      
 
     await conversation.save();
 
@@ -113,7 +112,7 @@ exports.handleMessage = async (req, res) => {
   }
 };
 
-
+//delete conversation
 exports.deleteConversation = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -128,6 +127,7 @@ exports.deleteConversation = async (req, res) => {
   }
 };
 
+//get conversations
 exports.getConversations = async (req, res) => {
   try {
     const userId = req.user.id; // Ensure that the user ID is correctly extracted from the JWT token
@@ -143,7 +143,7 @@ exports.getConversations = async (req, res) => {
   }
 };
 
-
+//getconversation
 exports.getConversation = async (req, res) => {
   try {
     const { conversationId } = req.params;

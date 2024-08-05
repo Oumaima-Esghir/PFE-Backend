@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const Personne = require('./Personne_model'); // Correction de l'importation du modèle `User`
 const Plan = require('./Plan_model')
 const Pub = require('./Pub_model')
+const Conversation = require('./Conversation_model')
 
 
 

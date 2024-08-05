@@ -6,13 +6,14 @@ const User = require('../models/User_model');
 const Partenaire = require('../models/Partenaire_model');
 const Pub = require('../models/Pub_model')
 
+//signin admin
 exports.signin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await Admin.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Admin not found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -36,7 +37,7 @@ exports.signin = async (req, res) => {
         id: user._id,
         email: user.email,
         token: token,
-     
+        roles:["admin"],
       }
     });
 
@@ -45,6 +46,7 @@ exports.signin = async (req, res) => {
   }
 };
 
+//get all users
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -54,6 +56,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+//get user by id
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -66,6 +69,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+//get all pubs
 exports.getAllPubs = async (req, res) => {
   try {
     const pubs = await Pub.find();
@@ -75,6 +79,7 @@ exports.getAllPubs = async (req, res) => {
   }
 };
 
+//get pub by id
 exports.getPubById = async (req, res) => {
   try {
     const pub = await Pub.findById(req.params.pubId);
@@ -87,6 +92,7 @@ exports.getPubById = async (req, res) => {
   }
 };
 
+//update & validate pub
 exports.updatePub = async (req, res) => {
   try {
     const updateData = req.body;
@@ -107,6 +113,7 @@ exports.updatePub = async (req, res) => {
   }
 };
 
+// get all partners
 exports.getAllPartners = async (req, res) => {
   try {
     const partners = await Partenaire.find();
@@ -116,6 +123,7 @@ exports.getAllPartners = async (req, res) => {
   }
 };
 
+// get partner by id
 exports.getPartnerById = async (req, res) => {
   try {
     const partner = await Partenaire.findById(req.params.partnerId);
