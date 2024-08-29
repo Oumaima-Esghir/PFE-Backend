@@ -40,6 +40,12 @@ router.get('/pubs/:pubId',AdminController.getPubById);
 //update and validate pub
 router.put('/pubs/:pubId',upload.single('pubImage'), AdminController.updatePub);
 
+// delete a user
+router.delete('/users/delete/:userId', AdminController.deleteUser);
+
+//  delete a partner
+router.delete('/partners/delete/:partnerId', AdminController.deletePartner);
+
 
 
 module.exports = router;
