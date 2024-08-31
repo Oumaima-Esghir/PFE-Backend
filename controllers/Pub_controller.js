@@ -1,6 +1,7 @@
 const Pub = require('../models/Pub_model');
 const Partenaire = require('../models/Partenaire_model');
 const Personne = require('../models/Personne_model');
+const multer = require('multer');
 
 
 exports.createPub = async (req, res) => {
@@ -43,14 +44,23 @@ exports.createPub = async (req, res) => {
     }
   };
 
-exports.getAllPubs = async (req, res) => {
-  try {
-    const pubs = await Pub.find();
-    res.status(200).json(pubs);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching publications", error: error.message });
-  }
-};
+  exports.getAllPubs = async (req, res) => {
+    try {
+      const pubs = await Pub.find();
+      
+      // Transform the array of pub documents
+      const transformedPubs = pubs.map(pub => ({
+        id: pub._id.toString(),
+        ...pub.toObject(), // Convert Mongoose document to plain JavaScript object
+      }));
+  
+      // Send the transformed array as a response
+      res.status(200).json(transformedPubs);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching publications", error: error.message });
+    }
+  };
+  
 
 
 exports.getPubById = async (req, res) => {
@@ -59,7 +69,13 @@ exports.getPubById = async (req, res) => {
     if (!pub) {
       return res.status(404).json({ message: "Publication not found" });
     }
-    res.status(200).json(pub);
+    const transformedPub = {
+      id: pub._id.toString(),
+      ...pub.toObject(),
+   
+    };
+
+    res.status(200).json(transformedPub);
   } catch (error) {
     res.status(500).json({ message: "Error fetching publication", error: error.message });
   }
@@ -98,10 +114,22 @@ exports.getPubById = async (req, res) => {
 };
 */
 //update pub
+const upload = multer({
+  dest: 'images/', // Directory to store the uploaded files
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB file size limit
+});
+
+
+
 exports.updatePub = async (req, res) => {
-     const { pubImage, title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
+  upload.single('pubImage') // Use multer middleware to handle file uploads
+
+     const {  title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
      const pubId = req.params.pubId; // The ID of the publication to update
      const partenaireId = req.user._id;
+     const pubImage = req.file ? req.file.path : null
+
+     
 
      try {
       const pub = await Pub.findById(pubId);

@@ -59,7 +59,7 @@ exports.getAllUsers = async (req, res) => {
 //get user by id
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
+    const user = await User.findById(req.params.userId).populate('favouritePubs') ;
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

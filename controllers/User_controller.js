@@ -199,6 +199,9 @@ exports.signin = async (req, res) => {
         return res.json({ status: 'error', message: 'Pub already in favourites' });
       }
   
+      
+
+
       user.favouritePubs.push(pubId);
       await user.save();
   

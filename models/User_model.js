@@ -27,11 +27,11 @@ const userSchema = new Schema({
   image: {
     type: String,
   },
-  favouritePubs: [{ type: Schema.Types.ObjectId, ref: 'Pub' }],  
+  favouritePubs: [{ type: Schema.Types.ObjectId, ref: 'pub' }],  // Référence au modèle Pub
 
   conversations: [{ type: Schema.Types.ObjectId, ref: 'Conversation' }],  
 
-  planifications: [{ type: Schema.Types.ObjectId, ref: 'Plan' }],  
+  planifications: [{ type: Schema.Types.ObjectId, ref: 'plans' }],  
 });
 
 const User = Personne.discriminator('User', userSchema);

@@ -47,7 +47,7 @@ exports.createRate = async (req, res) => {
     const pubId = req.params.pubId;
   
     try {
-      const pub = await Pub.findById(pubId)// Populate comments
+      const pub = await Pub.findById(pubId).populate('rates');// Populate comments
   
       if (!pub) {
         return res.status(404).json({ status: 'error', message: 'Publication not found' });

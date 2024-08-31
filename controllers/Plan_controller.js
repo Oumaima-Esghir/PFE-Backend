@@ -24,7 +24,7 @@ exports.getPlanById = async (req, res) => {
     }
     res.status(200).json(plan);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching planning", error: error.message });
+    res.status(500).json({ message: "Error fetching planning123", error: error.message });
   }
 };
 /*exports.getPlan = async (req, res) => {
@@ -41,18 +41,27 @@ exports.getPlanById = async (req, res) => {
 };*/
 
 exports.getPlan = async (req, res) => {
- const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
+  console.log("test");
+  const userId = req.user._id; // Assuming req.user is set by your isAuth middleware
 
- try {
-  // Filter the planifications by the userId
-  const plans = await Plan.find({ userId: userId });
-  if (plans.length === 0) {
-   return res.status(404).json({ status: 'error', message: 'No planifications found for this user' });
+  try {
+    // Filter the planifications by the userId
+    const plans = await Plan.find({ userId: userId });
+    if (plans.length === 0) {
+      return res.status(404).json({ status: 'error', message: 'No planifications found for this user' });
+    }
+
+    // Transform each plan
+    const transformedPlans = plans.map(plan => ({
+      id: plan._id.toString(), // Convert ObjectId to string
+      ...plan.toObject(),     // Convert Mongoose document to plain object
+    }));
+
+    // Respond with transformed plans
+    res.json({ status: 'success', data: transformedPlans });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
   }
-  res.json({ status: 'success', data: plans });
- } catch (error) {
-  res.status(500).json({ status: 'error', message: error.message });
- }
 };
 
 // CREATE PLAN

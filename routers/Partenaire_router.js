@@ -6,17 +6,20 @@ const path = require('path');
 const { isAuth } = require('../middlewares/auth');
 
 
-const storage = multer.diskStorage({
+
+
+  const storageLocal = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, "./images");
+      cb(null, "images/");
     },
     filename: function (req, file, cb) {
-      cb(null, Date.now() + path.extname(file.originalname));
+      cb(
+        null,
+        file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+      );
     },
   });
-  const upload = multer({ storage: storage });
-
-
+  const upload = multer({ storage: storageLocal });
 
 router.post('/signup', PartenaireController.signup);
 
@@ -24,6 +27,6 @@ router.post('/signin', PartenaireController.signin);
 
 router.put('/update', upload.single('image'),isAuth, PartenaireController.updatePartenaire); 
 
-router.get ('/' ,isAuth, PartenaireController.getPubs);
+router.get ('/pubs' ,isAuth, PartenaireController.getPubs);
 
 module.exports = router;

@@ -7,20 +7,22 @@ const path = require('path');
 const { isAuth } = require('../middlewares/auth');
 
 
+// Set up multer storage configuration
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, "./images");
-    },
-    filename: function (req, file, cb) {
-      cb(null, Date.now() + path.extname(file.originalname));
-    },
-  });
-  const upload = multer({ storage: storage });
+  destination: function (req, file, cb) {
+    cb(null, './images'); // Folder where images will be stored
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage: storage });
+
 
 
 router.post('/', isAuth, upload.single('pubImage'), PubController.createPub);
 
-router.get('/', PubController.getAllPubs);
+router.get('/',upload.single('pubImage'), PubController.getAllPubs);
 
 router.get('/:pubId', PubController.getPubById);
 

@@ -69,8 +69,8 @@ const PubSchema = new mongoose.Schema({
         default: null,
       },
       
-      comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
-      rates: [{ type: Schema.Types.ObjectId, ref: 'Rate' }], 
+      comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }],
+      rates: [{ type: Schema.Types.ObjectId, ref: 'rate' }], 
 });
 
 PubSchema.pre('save', async function (next) {

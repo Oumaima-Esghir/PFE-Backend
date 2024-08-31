@@ -47,17 +47,23 @@ exports.createComment = async (req, res) => {
     const pubId = req.params.pubId;
   
     try {
-      const pub = await Pub.findById(pubId)// Populate comments
+      const pub = await Pub.findById(pubId).populate({
+        path: 'comments',
+        populate: {
+          path: 'userId',
+          select: 'username email image', // Specify the fields you want to include from User
+        },
+      });
   
       if (!pub) {
         return res.status(404).json({ status: 'error', message: 'Publication not found' });
       }
   
       if (pub.comments.length === 0) {
-        return res.status(200).json({ status: 'success', message: 'No comments found for this pub' }); // Send appropriate status code (200)
+        return res.status(200).json({ status: 'success', message: 'No comments found for this pub' });
       }
   
-      res.json({ status: 'success', data: pub.comments }); // Return comments within pub
+      res.json({ status: 'success', data: pub.comments }); // Return comments with populated user data
     } catch (error) {
       console.error('Error fetching comments:', error.message);
       res.status(500).json({ status: 'error', message: error.message });

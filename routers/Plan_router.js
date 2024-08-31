@@ -8,7 +8,7 @@ const PlanController = require('../controllers/Plan_controller');
 router.get('/', PlanController.getPlans)
 
 //GET PLAN BY ID
-router.get('/:planId', isAuth, PlanController.getPlanById);
+router.get('/getid/:planId', isAuth, PlanController.getPlanById);
 
 // GET USER PLAN
 router.get('/get', isAuth, PlanController.getPlan)

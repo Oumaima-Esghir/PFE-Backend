@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
+const path = require('path'); 
 
 
 const DBCONNECT = require('./core/DB_CONNECT');
@@ -33,7 +34,7 @@ app.use('/rates', raterouter);
 app.use('/conversations', conversationrouter);
 app.use('/admin', adminrouter);
 
-
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.listen(process.env.PORT, () => {
     console.log(`server working on port : http://10.0.2.2:${process.env.PORT}`);

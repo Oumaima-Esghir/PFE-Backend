@@ -127,7 +127,13 @@ exports.signin = async (req, res) => {
       //console.log(partenaireId)
       const pubs = await Pub.find({partenaireId: partenaireId});
       //console.log({pubs})
-      res.status(200).json({pubs});
+      const transformedPubs = pubs.map(pub => ({
+        id: pub._id.toString(), // Convert ObjectId to string and rename _id to id
+        ...pub.toObject(),     // Spread the rest of the pub properties
+             
+      }));
+  
+      res.status(200).json({ pubs: transformedPubs });
     } catch (error) {
       res.status(500).json({msg:'erreur',error:error.msg})
     }
