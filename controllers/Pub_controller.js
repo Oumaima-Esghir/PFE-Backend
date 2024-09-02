@@ -127,7 +127,8 @@ exports.updatePub = async (req, res) => {
      const {  title, description, adress, rating, nb_likes, category, state, duree, pourcentage } = req.body;
      const pubId = req.params.pubId; // The ID of the publication to update
      const partenaireId = req.user._id;
-     const pubImage = req.file ? req.file.path : null
+     const        pubImage= req.file ? req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "") : "";
+
 
      
 

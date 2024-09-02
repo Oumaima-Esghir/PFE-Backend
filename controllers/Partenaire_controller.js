@@ -89,7 +89,7 @@ exports.signin = async (req, res) => {
     const updateData = req.body;
   
     if(req.file) {
-      updateData.image = req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "");
+      updateData.image = req.file ? req.file.path.replace(/\\/g, "/").replace("images", "").replace("src/", "") : "";
     }
   
     // Hash le mot de passe, si fourni
