@@ -6,12 +6,14 @@ const path = require('path');
 
 const DBCONNECT = require('./core/DB_CONNECT');
 const cors = require('cors');
-
+//win 9a3da tconnecti fel base 
 //DB Connection
 DBCONNECT.connect();
 
 // use middlewares
-app.use(cors());
+app.use(cors({
+    origin: '*'
+}));
 app.use(express.json());
 
 // import and use routers
@@ -36,6 +38,9 @@ app.use('/admin', adminrouter);
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-app.listen(process.env.PORT, () => {
+/*app.listen(process.env.PORT, () => {
     console.log(`server working on port : http://10.0.2.2:${process.env.PORT}`);
+});*/
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is working on port: http://127.0.0.1:${process.env.PORT || 3000}`);
 });
